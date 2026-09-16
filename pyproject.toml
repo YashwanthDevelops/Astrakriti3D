@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "astrakriti3d"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = ["requests==2.32.3", "psutil==6.0.0", "Flask==3.1.3"]
+
+[project.optional-dependencies]
+test = ["pytest==8.3.3"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

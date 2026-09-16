@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Astrakriti3D smoke report",
+  "type": "object",
+  "required": ["schema_version", "ok"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "ok": {"type": "boolean"},
+    "local_job_id": {"type": "string"},
+    "project_id": {"type": "string"},
+    "task_id": {"type": "string"},
+    "events": {"type": "array"},
+    "artifact": {"type": "object", "properties": {"path": {"type": "string"}, "sha256": {"type": "string"}}},
+    "error": {"type": "object", "required": ["type", "message"]}
+  }
+}

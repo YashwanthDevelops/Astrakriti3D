@@ -1,0 +1,88 @@
+{
+  "schema_version": "astrakriti3d.r1-baseline.v1",
+  "status": "official-production-baseline",
+  "project": "Astrakriti3D",
+  "source": {
+    "video": "inputs/DJI_0142.MP4",
+    "video_sha256": "3f6495864b393df5e3e6006501e8333fc2778ec2e955a862ed175c0d2524a91a",
+    "duration_seconds": 193.5934,
+    "duration_tolerance_seconds": 0.05
+  },
+  "extraction": {
+    "interval_seconds": 1.0,
+    "extraction_mode": "seek",
+    "sampling_rule": "first decoded frame at or after each one-second boundary",
+    "autorotation": "FFmpeg default autorotation applied; source rotation metadata is null",
+    "expected_frame_count": 194,
+    "frame_count_tolerance": 0,
+    "frame_directory": "evidence/phase4/real-run/images",
+    "manifest": "evidence/phase2/real-run/manifest.json",
+    "manifest_sha256": "ed989f28dd963cab80eefb0f2142b3ad0bf6eafcc4f54cc1435e5bd2bf9d1c08",
+    "filename_pattern": "^frame_[0-9]{6}\\.jpg$",
+    "filename_sequence_start": 1
+  },
+  "images": {
+    "width": 5472,
+    "height": 3078,
+    "jpeg_quality_argument": "-q:v 2",
+    "pixel_format": "yuv420p",
+    "expected_sha256_from_manifest": true
+  },
+  "telemetry": {
+    "association_manifest": "evidence/phase3/real-run/association_manifest.json",
+    "association_manifest_sha256": "8a4405b1642437fefb5f46df991f8f1eddcd5af540acb17c36ea34079f1190b4",
+    "association_rule": "match each extracted frame to the nearest ordered SRT telemetry record within the preparation tolerance",
+    "required_status": "matched",
+    "required_fields": ["frame_filename", "frame_timestamp_seconds", "matched_telemetry_timestamp_seconds", "latitude", "longitude", "altitude", "telemetry_record_id"]
+  },
+  "geo": {
+    "file": "evidence/phase14/controlled-20260915/R1/geo.txt",
+    "sha256": "b722c3accb8e658ab36e62e1eb124ab332f135fd0a4c3339cdfc1e676ed99e31",
+    "crs": "EPSG:4326",
+    "format": "EPSG:4326 header followed by filename longitude latitude, one record per line",
+    "expected_record_count": 194,
+    "coordinate_order": ["longitude", "latitude"]
+  },
+  "webodm": {
+    "task_id": "ef1199ec-d6d3-4a3f-91c3-70f38f41de1c",
+    "options_override": [],
+    "engine": "odx",
+    "engine_version": "3.8.3",
+    "node_api_version": "2.3.1",
+    "expected_registered_images": 194
+  },
+  "expected_outputs": {
+    "reprojection_error_pixels": 0.9213704783381625,
+    "reprojection_error_tolerance_pixels": 0.10,
+    "gps_residual_median_m": 0.37291450786504554,
+    "gps_residual_median_tolerance_m": 0.25,
+    "gps_residual_p95_m": 0.940584762382768,
+    "gps_residual_p95_tolerance_m": 0.50,
+    "point_cloud_count": 2429114,
+    "point_cloud_count_tolerance_fraction": 0.20,
+    "mesh": {
+      "full_3d_vertices": 194663,
+      "full_3d_faces": 389346,
+      "25d_vertices": 198077,
+      "25d_faces": 395141,
+      "geometry_required": true
+    },
+    "texturing": {
+      "expected": "successful textured_model.glb and textured_model.zip",
+      "known_failure": "texrecon 2.5D texturing may crash with exit 3221225477 / 0xC0000005 while adding edges"
+    }
+  },
+  "known_failure_conditions": [
+    "source video hash, manifest hash, image hash, telemetry association, or geo.txt provenance mismatch",
+    "missing, duplicate, unordered, or timestamp-invalid frame records",
+    "incomplete telemetry association or geo.txt record set",
+    "R1 frame count outside the explicit tolerance",
+    "native texrecon 2.5D access violation (3221225477 / 0xC0000005)",
+    "resource exhaustion, interrupted processing, or missing final artifacts"
+  ],
+  "evidence": {
+    "comparison_report": "evidence/phase16/aggressive-webodm-20260915/comparison_report.json",
+    "baseline_artifacts": "evidence/phase16/aggressive-webodm-20260915/baseline_artifacts",
+    "preservation_rule": "phase14 through phase19 evidence is historical and must not be modified"
+  }
+}
