@@ -1,0 +1,3 @@
+[submodule "model-resources/LightGlue-v0.2"]
+	path = model-resources/LightGlue-v0.2
+	url = https://github.com/cvg/LightGlue.git
