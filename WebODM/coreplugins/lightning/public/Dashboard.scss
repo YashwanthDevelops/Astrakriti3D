@@ -1,0 +1,51 @@
+.plugin-lightning .lightning-dashboard{
+    .loading{
+        margin-top: 12px;
+    }
+
+    .balance{
+        float: right;
+        font-size: 120%;
+        button{
+            margin-left: 4px;
+        }
+    }
+
+    .buttons > button{
+        clear: both;
+        margin-right: 4px;
+    }
+
+    .lightning-nodes{
+        ul{
+            padding-left: 0;
+        }
+        li{
+            list-style-type: none;
+        }
+        button{
+            margin-bottom: 16px;
+        }
+    }
+
+    .estimator{
+        margin-top: 12px;
+    }
+
+    h5{
+        font-weight: bold;
+    }    
+    .panels-container {
+      display: flex;
+    
+      .panel {
+        margin-bottom: 0;
+        border-width: 1px;
+        border-style: solid;
+        margin-right: 12px;
+        padding: 16px 16px 0px 16px;
+
+        border-radius: 4px;
+      }
+    }
+}

@@ -1,3 +1,9 @@
 [submodule "model-resources/LightGlue-v0.2"]
 	path = model-resources/LightGlue-v0.2
 	url = https://github.com/cvg/LightGlue.git
+[submodule "webodm-locale"]
+	path = WebODM/locale
+	url = https://github.com/WebODM/WebODM-Locale.git
+[submodule "webodm-nodeodm"]
+	path = WebODM/nodeodm/external/NodeODM
+	url = https://github.com/WebODM/NodeODX.git

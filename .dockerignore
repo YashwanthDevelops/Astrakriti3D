@@ -1,0 +1,8 @@
+**
+!pyproject.toml
+!astrakriti3d/
+!astrakriti3d/**
+!integrations/
+!integrations/**
+!scripts/
+!scripts/run_companion.py

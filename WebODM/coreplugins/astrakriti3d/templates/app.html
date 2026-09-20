@@ -1,0 +1,126 @@
+{% extends "app/logged_in_base.html" %}
+{% load render_bundle from webpack_loader %}
+
+{% block extra-headers %}
+    {{ block.super }}
+    <script>document.documentElement.classList.add("astrakriti-route");</script>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <link href="/plugins/astrakriti3d/astrakriti.css" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block headers-before-bundle %}
+    {% if page == 'model' %}{% include "3d_model_css.html" %}{% endif %}
+{% endblock %}
+
+{% block content %}
+<div id="astrakriti-shell" class="astrakriti-shell" data-page="{{ page }}" data-task-id="{{ task_id }}" data-dsm-available="{{ dsm_available|yesno:'true,false' }}">
+    <aside class="astrakriti-rail" aria-label="Astrakriti navigation">
+        <a class="astrakriti-brand" href="/astrakriti/overview/">
+            <svg class="astrakriti-brand-mark" viewBox="0 0 100 48" aria-hidden="true" focusable="false">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 42 39 3 97 42H3Z" />
+                    <path d="m17 42 9-14 13 4 11-20 12 12 11-1 12 19M26 28l3-15 12-10m0 0 1 19 9-7m0 0 13 2 5 10m0 0 12-1 6 6M39 32l1-19m0 0 9 7-9 12m9-12-9 12 13 10m-13-10-13-4-10 14m23-12 12-13m-12 13 18 0m-18 0 18 0 8-11m-8 11 20 0m-12-1 5 15" />
+                    <path d="M3 42h94" />
+                </g>
+            </svg>
+            <span>ASTRAKRITI3D</span>
+        </a>
+        <nav class="astrakriti-nav" aria-label="Global navigation">
+            <a class="{% if page == 'overview' %}is-active{% endif %}" href="/astrakriti/overview/">Overview</a>
+            <a class="{% if page == 'missions' or page == 'mission' %}is-active{% endif %}" href="/astrakriti/missions/">Missions</a>
+            <a class="{% if page == 'reconstructions' or page == 'run' %}is-active{% endif %}" href="/astrakriti/reconstructions/">Reconstructions</a>
+            <a class="{% if page == 'artifacts' or page == 'files' %}is-active{% endif %}" href="/astrakriti/artifacts/">Artifacts</a>
+            <a class="{% if page == 'reports' %}is-active{% endif %}" href="/astrakriti/reports/">Reports</a>
+            <a class="{% if page == 'processing' %}is-active{% endif %}" href="/astrakriti/processing/">Processing</a>
+            <a class="{% if page == 'system' %}is-active{% endif %}" href="/astrakriti/system/">System</a>
+            <a class="{% if page == 'settings' %}is-active{% endif %}" href="/astrakriti/settings/">Settings</a>
+        </nav>
+        <a class="astrakriti-new-action" href="/astrakriti/new-reconstruction/">New Reconstruction</a>
+        <div class="astrakriti-rail-footer">
+            <span class="status-dot status-dot-neutral" aria-hidden="true"></span>
+            <span>Native WebODM session</span>
+        </div>
+    </aside>
+
+    <main class="astrakriti-main">
+        <div class="astrakriti-utility" role="status" aria-live="polite">
+            <span>WEBODM <strong id="astrakriti-utility-webodm">CONNECTED</strong></span>
+            <span>PROCESSING <strong id="astrakriti-utility-processing">CHECKING</strong></span>
+            <span>STORAGE <strong id="astrakriti-utility-storage">CHECKING</strong></span>
+            <span class="astrakriti-utility-time" id="astrakriti-utility-time"></span>
+        </div>
+
+        <section class="astrakriti-page">
+            <header class="astrakriti-page-header">
+                <div>
+                    <p class="eyebrow">EVIDENCE WORKSPACE / WEBODM</p>
+                    <h1>{{ title }}</h1>
+                </div>
+                <div class="astrakriti-header-actions">
+                    {% if task_id %}
+                    <a class="button button-secondary" href="/astrakriti/runs/{{ task_id }}/">Run overview</a>
+                    {% endif %}
+                    <a class="button button-primary" href="/astrakriti/new-reconstruction/">New reconstruction</a>
+                </div>
+            </header>
+
+            {% if context_links %}
+            <nav class="astrakriti-context-nav" aria-label="Run navigation">
+                {% for link in context_links %}
+                <a class="{% if page == link.page %}is-active{% endif %}" href="{{ link.url }}">{{ link.label }}</a>
+                {% endfor %}
+            </nav>
+            {% elif project_links %}
+            <nav class="astrakriti-context-nav" aria-label="Mission navigation">
+                {% for link in project_links %}
+                <a class="{% if link.active %}is-active{% endif %}" href="{{ link.url }}">{{ link.label }}</a>
+                {% endfor %}
+            </nav>
+            {% endif %}
+
+            {% if page == 'map' and task_id %}
+            <div class="astrakriti-viewer-layout">
+                <section class="astrakriti-viewer-pane" aria-label="Native WebODM map viewer">
+                    <div data-mapview
+                        {% for key, value in viewer_params.items %}data-{{ key }}="{{ value }}" {% endfor %}>
+                        {% include "map_placeholder.html" %}
+                    </div>
+                </section>
+                <aside class="astrakriti-inspector" aria-label="Map measurements">
+                    <div class="inspector-heading"><span class="eyebrow">TASK MEASUREMENTS</span><a href="/api/plugins/astrakriti3d/measurements/task/{{ task_id }}/export?format=geojson">Export GeoJSON</a></div>
+                    <p class="inspector-copy">Draw with the native WebODM measurement control. Save from the result popup after checking the coordinate method and units.</p>
+                    <p class="inspector-meta">CRS: <span class="mono">{{ task_srs.name|default:'unknown' }}</span> · units: <span class="mono">{{ task_srs.units|default:'unknown' }}</span><br>DSM volume: <span class="mono">{% if dsm_available %}AVAILABLE{% else %}UNAVAILABLE{% endif %}</span><br>artifact revision: <span class="mono">{{ artifact_revision|slice:':12' }}</span></p>
+                    <div id="astrakriti-measurement-list" class="measurement-list"><p class="state-copy">Loading saved measurements…</p></div>
+                </aside>
+            </div>
+{% elif page == 'model' and task_id %}
+            <div class="astrakriti-viewer-layout astrakriti-model-layout">
+                <section class="astrakriti-viewer-pane" aria-label="Native Potree 3D viewer">
+                    <div data-modelview class="full-height"
+                        {% for key, value in viewer_params.items %}data-{{ key }}="{{ value }}" {% endfor %}>
+                        {% include "3d_model_placeholder.html" %}
+                    </div>
+                </section>
+                <aside class="astrakriti-inspector" aria-label="3D model evidence">
+                    <div class="inspector-heading"><span class="eyebrow">NATIVE POTREE SCENE</span><a href="/astrakriti/runs/{{ task_id }}/measurements/">Measurements</a></div>
+                    <p class="inspector-copy">Orbit, pick, clip, and measure in the native Potree scene. WebODM's task-scoped scene endpoint remains the authority for 3D camera and measurement persistence.</p>
+                    <p class="inspector-meta">CRS: <span class="mono">{{ task_srs.name|default:'unknown' }}</span> · units: <span class="mono">{{ task_srs.units|default:'unknown' }}</span><br>artifact revision: <span class="mono">{{ artifact_revision|slice:':12' }}</span></p>
+                    <div id="astrakriti-measurement-list" class="measurement-list"><p class="state-copy">Loading saved measurements…</p></div>
+                </aside>
+            </div>
+            {% else %}
+            <div id="astrakriti-workspace" class="astrakriti-workspace" aria-live="polite"></div>
+            {% endif %}
+        </section>
+    </main>
+</div>
+
+<script id="astrakriti-data" type="application/json">{{ data_json|safe }}</script>
+<script src="/plugins/astrakriti3d/shell.js"></script>
+{% if page == 'map' %}
+    {% render_bundle 'MapView' attrs='async' %}
+{% elif page == 'model' %}
+    {% include "3d_model_js.html" %}
+    {% render_bundle 'ModelView' attrs='async' %}
+{% endif %}
+{% endblock %}

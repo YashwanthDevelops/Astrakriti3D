@@ -1,0 +1,66 @@
+import $ from 'jquery';
+
+export default {
+    waitForCompletion: (celery_task_id, cb, progress_cb, checkUrl, checkHeaders) => {
+        checkUrl = checkUrl || "/api/workers/check/";
+        let errorCount = 0;
+        let url = checkUrl + celery_task_id;
+
+        const check = () => {
+          $.ajax({
+              type: 'GET',
+              url,
+              headers: checkHeaders
+          }).done(result => {
+              if (result.error){
+                cb(result.error);
+              }else if (result.ready){
+                cb();
+              }else{
+                if (typeof progress_cb === "function" && result.progress !== undefined && result.status !== undefined){
+                    progress_cb(result.status, result.progress);
+                }
+                // Retry
+                setTimeout(() => check(), 2000);
+              }
+          }).fail(error => {
+              console.warn(error);
+              if (errorCount++ < 10) setTimeout(() => check(), 2000);
+              else cb(error.statusText);
+          });
+        };
+    
+        check();
+    },
+
+    downloadFile: (celery_task_id, filename = "") => {
+        window.location.href = `/api/workers/get/${celery_task_id}?filename=${filename}`;
+    },
+
+    getOutput: (celery_task_id, cb, getUrl = "/api/workers/get/", headers) => {
+        let url = getUrl + celery_task_id;
+        $.ajax({
+            type: 'GET',
+            url: url,
+            headers: headers
+        }).done(result => {
+            if (result.error) cb(result.error);
+            else if (result.output !== undefined) cb(null, result.output, result);
+            else if (result.link !== undefined) cb(null, result.link, result);
+            else cb(new Error("Invalid response: " + JSON.stringify(result)));
+        }).fail(cb);
+    },
+
+    cancel: (celery_task_id, cb) => {
+        let url = "/api/workers/cancel/" + celery_task_id;
+        $.ajax(url, {
+            type: 'POST',
+        }).done(result => {
+            if (typeof cb === 'function'){
+                if (result.success) cb(null);
+                else cb(new Error("Cannot cancel task"));
+            }
+        }).fail(cb);
+    }
+};
+

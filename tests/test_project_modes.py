@@ -78,6 +78,78 @@ def test_local_mode_ignores_present_srt_and_never_creates_geo(tmp_path, monkeypa
     assert not (out / "telemetry").exists()
 
 
+def test_r2_diagnostics_are_path_free_advisory_and_preserve_r1_frames(tmp_path, monkeypatch):
+    video, out = _fake_prepare(monkeypatch, tmp_path)
+
+    def diagnostic(manifest_path, frames_dir, output, **options):
+        assert options["dry_run"] is True
+        assert Path(manifest_path).is_file()
+        return {
+            "candidate_count": 2,
+            "selected_count": 1,
+            "configuration": {"algorithm": "experimental", "selection_report": "private/path"},
+            "rows": [
+                {"frame_number": 1, "timestamp": 0, "blur_score": 3.2, "decision": "keep", "source_path": "private/path"},
+                {"frame_number": 2, "timestamp": 1, "blur_score": 2.1, "decision": "reject", "source_path": "private/path"},
+            ],
+        }
+
+    monkeypatch.setattr("astrakriti3d.project.adaptive_select_frames", diagnostic)
+    prepare_project(video, out, mode="local")
+    advisory = json.loads((out / "selection" / "advisory.json").read_text())
+    assert advisory["baseline"] == "R1"
+    assert advisory["policy"] == "advisory_only_all_source_frames_retained"
+    assert "source_path" not in json.dumps(advisory)
+    assert "private/path" not in json.dumps(advisory)
+    assert sorted(p.name for p in (out / "frames").glob("*.jpg")) == ["frame_000001.jpg", "frame_000002.jpg"]
+
+
+def test_selection_diagnostic_failure_does_not_fail_preparation(tmp_path, monkeypatch):
+    video, out = _fake_prepare(monkeypatch, tmp_path)
+
+    def unavailable(*args, **kwargs):
+        raise RuntimeError("selector unavailable")
+
+    monkeypatch.setattr("astrakriti3d.project.adaptive_select_frames", unavailable)
+    result = prepare_project(video, out, mode="local")
+    advisory = json.loads((out / "selection" / "advisory.json").read_text())
+    assert result["mode"] == "local"
+    assert advisory["status"] == "unavailable"
+    assert "RuntimeError" in advisory["detail"]
+    assert sorted(p.name for p in (out / "frames").glob("*.jpg")) == ["frame_000001.jpg", "frame_000002.jpg"]
+
+
+def test_georeferenced_coverage_is_advisory_and_does_not_rewrite_geo_or_frames(tmp_path, monkeypatch):
+    video, out = _fake_prepare(monkeypatch, tmp_path)
+    srt = tmp_path / "video.SRT"
+    _srt(srt)
+    metrics = {
+        "blur_score": 100.0,
+        "clipped_ratio": 0.0,
+        "feature_count": 200,
+        "useful_match_count": 100,
+        "match_ratio": 0.5,
+        "median_feature_displacement": 20.0,
+        "new_feature_ratio": 0.3,
+        "image_similarity": 0.7,
+    }
+    monkeypatch.setattr(
+        "astrakriti3d.selection._adaptive_metrics",
+        lambda *args, **kwargs: (metrics, ([], None), None),
+    )
+    prepare_project(video, out, mode="georeferenced", srt=srt)
+    original_geo = (out / "geo.txt").read_bytes()
+    original_frames = {p.name: p.read_bytes() for p in (out / "frames").glob("*.jpg")}
+    advisory = json.loads((out / "selection" / "advisory.json").read_text())
+    assert "coverage" in advisory, advisory
+    coverage = advisory["coverage"]
+    assert coverage["status"] == "available"
+    assert coverage["geo_validation"]["names_match"] is True
+    assert len(coverage["rows"]) == 2
+    assert (out / "geo.txt").read_bytes() == original_geo
+    assert {p.name: p.read_bytes() for p in (out / "frames").glob("*.jpg")} == original_frames
+
+
 def test_stale_geo_is_rejected_instead_of_reused(tmp_path, monkeypatch):
     video, out = _fake_prepare(monkeypatch, tmp_path)
     (out / "geo.txt").write_text("EPSG:4326\nold.jpg 1 2\n")

@@ -1,14 +1,19 @@
 # Astrakriti3D
 
-Astrakriti3D is a reproducible drone-video 3D reconstruction project with a Python processing pipeline and a read-only local evidence dashboard.
+Astrakriti3D is a reproducible drone-video 3D reconstruction project with a Python preparation pipeline integrated into the customized WebODM application. WebODM is the production UI and owns authentication, Projects, Tasks, reconstruction lifecycle, viewers, and output handling.
 
 ## Project layout
 
 - `astrakriti3d/` — Python package for preparation, selection, reconstruction, recovery, storage, and telemetry workflows.
+- `WebODM/` — the customized WebODM application and its Astrakriti3D plugin, vendored from the upstream WebODM source.
 - `run_astrakriti.py` — command-line entry point.
-- `web/` — browser dashboard (`index.html`, `styles.css`, and `app.js`).
+- `web/` — retired dashboard assets retained as historical references; they are not served by the compatibility API.
 - `tests/` — automated test suite.
 - `config/` and `docs/` — baseline configuration and project documentation.
+
+See [docs/INTEGRATION_BOUNDARY.md](docs/INTEGRATION_BOUNDARY.md) for the current
+application boundary and [docs/IMPLEMENTATION_PHASES_WEBODM.md](docs/IMPLEMENTATION_PHASES_WEBODM.md)
+for the historical staged integration plan.
 
 ## Setup
 
@@ -23,15 +28,25 @@ Copy-Item .env.example .env
 
 Set `WEBODM_BASE_URL`, `WEBODM_USERNAME`, and `WEBODM_PASSWORD` in `.env` when using WebODM. Never commit `.env`, videos, generated evidence, credentials, or runtime databases.
 
-## Run the dashboard
+## Open ASTRAKRITI3D
 
-From the project root:
+Open the authenticated WebODM application at `/astrakriti/overview/`. The base URL comes from the deployment's `WEBODM_BASE_URL`; do not put WebODM credentials in a browser URL.
+
+The former standalone UI is retired. For compatibility, the local Flask service may still expose its read-only `/api/summary`, `/api/health`, `/api/artifacts`, and `/api/dashboard/media/...` endpoints. Its `/` route redirects to the WebODM shell when a valid `WEBODM_BASE_URL` is configured, returns HTTP 410 otherwise, and no longer serves the legacy HTML/JavaScript assets. It does not run reconstruction processing.
+
+To run only those retained read-only API endpoints from the project root:
 
 ```powershell
 python run_web.py
 ```
 
-Open the local URL printed by the command in a current browser. The dashboard is read-only and serves the project evidence summary through the local API.
+The WebODM URL and native login remain authoritative; the local service is not a replacement dashboard or authentication boundary.
+
+The customized WebODM source is included in `WebODM/`. Its upstream source
+commit and vendoring notes are recorded in
+[`WebODM/ASTRAKRITI3D_SOURCE.md`](WebODM/ASTRAKRITI3D_SOURCE.md). The WebODM
+source dependencies are listed in the root `.gitmodules`; clone with
+`--recurse-submodules` to fetch them.
 
 ## Test
 

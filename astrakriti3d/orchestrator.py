@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import json
+import threading
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .preflight import run_preflight
@@ -11,6 +14,63 @@ from .recovery import run_reconstruction
 
 class RunOrchestrationError(RuntimeError):
     pass
+
+
+class PreparationQueue:
+    """Persistent, non-blocking queue for Phase 4 preparation jobs."""
+
+    def __init__(self, state_path):
+        self.state_path = Path(state_path)
+        self.state_path.parent.mkdir(parents=True, exist_ok=True)
+        self._lock = threading.Lock()
+        self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="astrakriti3d-prep")
+        self._jobs = {}
+        if self.state_path.is_file():
+            self._jobs = json.loads(self.state_path.read_text(encoding="utf-8"))
+
+    def _save(self):
+        self.state_path.write_text(json.dumps(self._jobs, indent=2), encoding="utf-8")
+
+    def submit(self, job_id, video, output, *, mode, srt=None, **options):
+        with self._lock:
+            if job_id in self._jobs and self._jobs[job_id]["status"] not in {"failed", "cancelled"}:
+                raise ValueError(f"preparation job already exists: {job_id}")
+            self._jobs[job_id] = {"status": "queued", "created_at": datetime.now(timezone.utc).isoformat(), "video": str(Path(video).resolve()), "output": str(Path(output).resolve()), "mode": mode, "srt": str(Path(srt).resolve()) if srt else None}
+            self._save()
+
+        def work():
+            with self._lock:
+                if self._jobs[job_id]["status"] == "cancelled":
+                    return
+                self._jobs[job_id]["status"] = "running"
+                self._save()
+            try:
+                result = prepare_project(video, output, mode=mode, srt=srt, **options)
+                with self._lock:
+                    self._jobs[job_id].update({"status": "completed", "result": result.get("project_report", {})})
+                    self._save()
+            except Exception as exc:
+                with self._lock:
+                    self._jobs[job_id].update({"status": "failed", "error": str(exc)})
+                    self._save()
+
+        self._executor.submit(work)
+        return self.status(job_id)
+
+    def cancel(self, job_id):
+        with self._lock:
+            job = self._jobs[job_id]
+            if job["status"] == "queued":
+                job["status"] = "cancelled"
+                self._save()
+                return self.status(job_id)
+            raise ValueError("running preparation cannot be safely cancelled")
+
+    def status(self, job_id):
+        with self._lock:
+            if job_id not in self._jobs:
+                raise KeyError(job_id)
+            return dict(self._jobs[job_id])
 
 
 def _validate_prepared_input(output: Path, mode: str) -> dict:

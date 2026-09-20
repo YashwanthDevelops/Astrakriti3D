@@ -7,7 +7,9 @@ from pathlib import Path
 from .client import WebODMClient
 from .config import Config
 from .storage import manifest_for_images
+from .storage import JobStore, fingerprint
 from .preflight import run_preflight
+from integrations.webodm_adapter import WebODMAdapter
 
 def _now(): return datetime.now(timezone.utc).isoformat()
 def _sha(path):
@@ -24,7 +26,7 @@ def _classify_failure(stage, exit_code, text, service_error=False):
     low = (text or "").lower()
     if service_error or any(x in low for x in ("connection refused", "timeout", "nodeodm", "webodm api")): category = "service_failure"
     elif "texrecon" in low or "mvs_texturing" in low or str(exit_code) in {"3221225477", "0xc0000005"}: category = "texrecon"
-    elif any(x in low for x in ("out of memory", "cannot allocate", "bad_alloc", "resource exhaustion")): category = "memory"
+    elif any(x in low for x in ("out of memory", "not enough memory", "cannot allocate", "bad_alloc", "resource exhaustion")): category = "memory"
     elif any(x in low for x in ("alignment", "opensfm", "reconstruction failed", "not enough matches")): category = "alignment"
     elif any(x in low for x in ("geo.txt", "invalid coordinate", "missing image", "malformed", "input")): category = "invalid_input"
     elif stage in {"mvs_texturing", "texturing"}: category = "texrecon"
@@ -39,6 +41,13 @@ def _stage(task, previous=None):
     for name in ("dataset","opensfm","openmvs","odm_filterpoints","odm_meshing","mvs_texturing","odm_georeferencing","odm_orthophoto","odm_report","odm_postprocess"):
         if name.lower() in error.lower(): return name
     return previous or "unknown"
+
+def _lifecycle_state(raw_status):
+    """Normalize WebODM's numeric task state into a durable local state."""
+    try:
+        return {10: "submitted", 20: "processing", 30: "failed", 40: "completed", 50: "cancelled"}[int(raw_status)]
+    except (KeyError, TypeError, ValueError):
+        return "recovery_required"
 
 def _artifact_inventory(run_dir):
     out=[]
@@ -56,10 +65,10 @@ def _failure_report(run_dir, stage, exit_code, text, service_error=False, cancel
     (Path(run_dir)/"failure_report.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
     return report
 
-def _save_processing_output(client, project_id, task_id, run_dir, api_log):
+def _save_processing_output(adapter, project_id, task_id, run_dir, api_log):
     if not project_id or not task_id: return
     try:
-        (Path(run_dir) / "webodm_output.log").write_text(client.output(project_id, task_id), encoding="utf-8")
+        (Path(run_dir) / "webodm_output.log").write_text(adapter.get_output(project_id, task_id), encoding="utf-8")
         _append(api_log, {"timestamp": _now(), "operation": "output", "status": "passed"})
     except Exception as exc:
         _append(api_log, {"timestamp": _now(), "operation": "output", "error": str(exc)})
@@ -81,20 +90,29 @@ def run_reconstruction(video, images, output, *, mode, srt=None, geo_txt=None, s
     status={"status":"preflight_failed" if preflight.get("status")!="PASS" else "ready","mode":mode,"run_id":run_dir.name,"stage":"preflight","events":[],"terminal":False}; _write(run_dir/"task_status.json",status)
     if preflight.get("status")!="PASS":
         report=_failure_report(run_dir,"preflight",None,"preflight failed; submission was prevented"); status.update({"status":"preflight_failed","terminal":True}); _write(run_dir/"task_status.json",status); return {"ok":False,"run_dir":str(run_dir),"run_manifest":run_manifest,"task_status":status,"failure_report":report}
-    client=client_factory(config or Config.from_env()); api_log=run_dir/"api_log.jsonl"; processing_log=run_dir/"processing_log.jsonl"; task=None; task_id=None; project_id=None; previous_stage="preflight"; started=time.monotonic()
+    transport=client_factory(config or Config.from_env()); adapter=transport if isinstance(transport, WebODMAdapter) else WebODMAdapter(transport)
+    db_path=getattr(config or Config.from_env(), "db_path", base / "jobs.sqlite3")
+    store=JobStore(db_path); logical_id=fingerprint(image_manifest, options or [], _sha(copied_geo) if copied_geo else None)
+    existing=store.get_by_fingerprint(logical_id)
+    if not existing: store.create(logical_id, logical_id, image_manifest, options or [])
+    api_log=run_dir/"api_log.jsonl"; processing_log=run_dir/"processing_log.jsonl"; task=None; task_id=None; project_id=None; previous_stage="preflight"; started=time.monotonic()
     try:
-        _append(api_log,{"timestamp":_now(),"operation":"authenticate"}); client.authenticate(); _append(api_log,{"timestamp":_now(),"operation":"authenticate","status":"passed"})
-        _append(api_log,{"timestamp":_now(),"operation":"find_or_create_project"}); project_id=client.find_or_create_project(); _append(api_log,{"timestamp":_now(),"operation":"find_or_create_project","project_id":project_id})
-        _append(api_log,{"timestamp":_now(),"operation":"submit_task","mode":mode,"geo_included":bool(copied_geo)}); task_id=client.submit_task(project_id,image_manifest,options or [],geo_txt=copied_geo if mode=="georeferenced" else None); _append(api_log,{"timestamp":_now(),"operation":"submit_task","task_id":task_id,"project_id":project_id})
-        run_manifest.update({"project_id":project_id,"task_id":task_id}); _write(run_dir/"run_manifest.json",run_manifest); status.update({"status":"submitted","task_id":task_id,"project_id":project_id}); _write(run_dir/"task_status.json",status)
+        _append(api_log,{"timestamp":_now(),"operation":"authenticate"}); adapter.authenticate(); _append(api_log,{"timestamp":_now(),"operation":"authenticate","status":"passed"})
+        persisted=store.get(logical_id); project_id=persisted["project_id"] if persisted and persisted["project_id"] else adapter.create_project(); persisted=store.reserve_submission(logical_id,project_id); project_id=persisted["project_id"]
+        if persisted["task_id"]:
+            task_id=persisted["task_id"]
+            _append(api_log,{"timestamp":_now(),"operation":"reconcile_task","task_id":task_id,"project_id":project_id})
+        else:
+            _append(api_log,{"timestamp":_now(),"operation":"submit_task","mode":mode,"geo_included":bool(copied_geo)}); task_id=adapter.create_task(project_id,image_manifest,options or [],geo_txt=copied_geo if mode=="georeferenced" else None); store.record_submission(logical_id,project_id,task_id); _append(api_log,{"timestamp":_now(),"operation":"submit_task","task_id":task_id,"project_id":project_id})
+        run_manifest.update({"project_id":project_id,"task_id":task_id}); _write(run_dir/"run_manifest.json",run_manifest); status.update({"status":"submitted","task_id":task_id,"project_id":project_id}); _write(run_dir/"task_status.json",status); previous_stage="processing"
         while True:
             if cancel_after is not None and time.monotonic()-started>=cancel_after:
-                _append(api_log,{"timestamp":_now(),"operation":"cancel_task","task_id":task_id}); client.cancel(project_id,task_id); status.update({"status":"cancelled","terminal":True}); _write(run_dir/"task_status.json",status); report=_failure_report(run_dir,previous_stage,None,"safe cancellation requested",cancelled=True); return {"ok":False,"run_dir":str(run_dir),"task_id":task_id,"failure_report":report}
-            try: task=client.task(project_id,task_id); _append(api_log,{"timestamp":_now(),"operation":"poll_task","task_id":task_id,"status":task.get("status")})
+                _append(api_log,{"timestamp":_now(),"operation":"cancel_task","task_id":task_id}); adapter.cancel_task(project_id,task_id); status.update({"status":"cancelled","terminal":True}); _write(run_dir/"task_status.json",status); report=_failure_report(run_dir,previous_stage,None,"safe cancellation requested",cancelled=True); return {"ok":False,"run_dir":str(run_dir),"task_id":task_id,"failure_report":report}
+            try: task=adapter.get_task_status(project_id,task_id).raw; _append(api_log,{"timestamp":_now(),"operation":"poll_task","task_id":task_id,"status":task.get("status")})
             except Exception as exc:
-                _append(api_log,{"timestamp":_now(),"operation":"poll_task","error":str(exc)}); _save_processing_output(client,project_id,task_id,run_dir,api_log); report=_failure_report(run_dir,previous_stage,None,str(exc),service_error=True); status.update({"status":"service_failure","terminal":True}); _write(run_dir/"task_status.json",status); return {"ok":False,"run_dir":str(run_dir),"task_id":task_id,"failure_report":report}
-            stage=_stage(task,previous_stage); event={"timestamp":_now(),"stage":stage,"status":task.get("status"),"progress":task.get("running_progress",task.get("upload_progress")),"last_error":task.get("last_error")}; _append(processing_log,event); status["events"].append(event); status.update({"status":task.get("status"),"stage":stage}); _write(run_dir/"task_status.json",status); previous_stage=stage
-            raw_value=task.get("status")
+                _append(api_log,{"timestamp":_now(),"operation":"poll_task","error":str(exc)}); _save_processing_output(adapter,project_id,task_id,run_dir,api_log); report=_failure_report(run_dir,previous_stage,None,str(exc),service_error=True); status.update({"status":"service_failure","terminal":True}); _write(run_dir/"task_status.json",status); return {"ok":False,"run_dir":str(run_dir),"task_id":task_id,"failure_report":report}
+            stage=_stage(task,previous_stage); raw_status=task.get("status"); lifecycle=_lifecycle_state(raw_status); event={"timestamp":_now(),"stage":stage,"status":lifecycle,"webodm_status":raw_status,"lifecycle_state":lifecycle,"progress":task.get("running_progress",task.get("upload_progress")),"last_error":task.get("last_error")}; _append(processing_log,event); status["events"].append(event); status.update({"status":lifecycle,"webodm_status":raw_status,"stage":stage}); _write(run_dir/"task_status.json",status); previous_stage=stage
+            raw_value=raw_status
             if raw_value is None:
                 # WebODM can briefly return a task record without status just
                 # after upload. Preserve the event and poll again instead of
@@ -104,21 +122,21 @@ def run_reconstruction(video, images, output, *, mode, srt=None, geo_txt=None, s
             raw=int(raw_value)
             if raw==40:
                 for asset in task.get("available_assets",[]):
-                    try: client.download(project_id,task_id,asset,run_dir/"artifacts"/asset); _append(api_log,{"timestamp":_now(),"operation":"download","asset":asset,"status":"passed"})
+                    try: adapter.get_assets(project_id,task_id,[asset],run_dir/"artifacts"); _append(api_log,{"timestamp":_now(),"operation":"download","asset":asset,"status":"passed"})
                     except Exception as exc: _append(api_log,{"timestamp":_now(),"operation":"download","asset":asset,"error":str(exc)})
-                try: (run_dir/"webodm_output.log").write_text(client.output(project_id,task_id),encoding="utf-8")
+                try: (run_dir/"webodm_output.log").write_text(adapter.get_output(project_id,task_id),encoding="utf-8")
                 except Exception as exc: _append(api_log,{"timestamp":_now(),"operation":"output","error":str(exc)})
                 artifacts=_artifact_inventory(run_dir)
                 if not any(x["path"].endswith("shots.geojson") for x in artifacts):
                     report=_failure_report(run_dir,stage,None,"task reached completed status but required camera output was absent"); status.update({"status":"partial_output","terminal":True}); _write(run_dir/"task_status.json",status); return {"ok":False,"run_dir":str(run_dir),"task_id":task_id,"failure_report":report}
                 status.update({"status":"completed","terminal":True,"artifacts":artifacts}); _write(run_dir/"task_status.json",status); return {"ok":True,"run_dir":str(run_dir),"task_id":task_id,"artifacts":artifacts}
             if raw in {30,50}:
-                text=str(task.get("last_error") or ""); match=re.search(r"(?:exit(?: code)?|returned)\D+(0x[0-9a-fA-F]+|\d+)",text,re.I); code=match.group(1) if match else None; _save_processing_output(client,project_id,task_id,run_dir,api_log); report=_failure_report(run_dir,stage,code,text,cancelled=raw==50); status.update({"status":"failed" if raw==30 else "cancelled","terminal":True}); _write(run_dir/"task_status.json",status); return {"ok":False,"run_dir":str(run_dir),"task_id":task_id,"failure_report":report}
+                text=str(task.get("last_error") or ""); match=re.search(r"(?:exit(?: code)?|returned)\D+(0x[0-9a-fA-F]+|\d+)",text,re.I); code=match.group(1) if match else None; _save_processing_output(adapter,project_id,task_id,run_dir,api_log); report=_failure_report(run_dir,stage,code,text,cancelled=raw==50); status.update({"status":"failed" if raw==30 else "cancelled","terminal":True}); _write(run_dir/"task_status.json",status); return {"ok":False,"run_dir":str(run_dir),"task_id":task_id,"failure_report":report}
             time.sleep(poll_seconds)
     except KeyboardInterrupt:
         if project_id and task_id:
-            try: client.cancel(project_id,task_id)
+            try: adapter.cancel_task(project_id,task_id)
             except Exception: pass
-        _save_processing_output(client,project_id,task_id,run_dir,api_log); report=_failure_report(run_dir,previous_stage,None,"keyboard interruption; cancellation attempted",cancelled=True); status.update({"status":"cancelled","terminal":True}); _write(run_dir/"task_status.json",status); return {"ok":False,"run_dir":str(run_dir),"task_id":task_id,"failure_report":report}
+        _save_processing_output(adapter,project_id,task_id,run_dir,api_log); report=_failure_report(run_dir,previous_stage,None,"keyboard interruption; cancellation attempted",cancelled=True); status.update({"status":"cancelled","terminal":True}); _write(run_dir/"task_status.json",status); return {"ok":False,"run_dir":str(run_dir),"task_id":task_id,"failure_report":report}
     except Exception as exc:
-        _save_processing_output(client,project_id,task_id,run_dir,api_log); report=_failure_report(run_dir,previous_stage,None,str(exc),service_error=True); status.update({"status":"failed","terminal":True}); _write(run_dir/"task_status.json",status); return {"ok":False,"run_dir":str(run_dir),"task_id":task_id,"failure_report":report}
+        _save_processing_output(adapter,project_id,task_id,run_dir,api_log); report=_failure_report(run_dir,previous_stage,None,str(exc),service_error=True); status.update({"status":"failed","terminal":True}); _write(run_dir/"task_status.json",status); return {"ok":False,"run_dir":str(run_dir),"task_id":task_id,"failure_report":report}

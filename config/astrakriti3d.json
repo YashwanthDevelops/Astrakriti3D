@@ -1,0 +1,13 @@
+{
+  "application_name": "Astrakriti3D",
+  "product_label": "Drone reconstruction workspace",
+  "theme": {
+    "mode": "light",
+    "accent": "#0f766e",
+    "workspace": "#17212b"
+  },
+  "integration": {
+    "adapter": "integrations.webodm_adapter.WebODMAdapter",
+    "upstream_checkout": "..\\WebODM"
+  }
+}

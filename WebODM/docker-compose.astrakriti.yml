@@ -1,0 +1,34 @@
+services:
+  astrakriti-companion:
+    build:
+      context: ${ASTRAKRITI_SOURCE_DIR:-..}
+      dockerfile: Dockerfile.companion
+    environment:
+      ASTRAKRITI_COMPANION_HOST: 0.0.0.0
+      ASTRAKRITI_COMPANION_PORT: "5001"
+      ASTRAKRITI_COMPANION_ROOT: /var/lib/astrakriti/companion
+      ASTRAKRITI_COMPANION_TOKEN: ${ASTRAKRITI_COMPANION_TOKEN:?Set ASTRAKRITI_COMPANION_TOKEN to a random secret}
+      ASTRAKRITI_COMPANION_MAX_BYTES: ${ASTRAKRITI_COMPANION_MAX_BYTES:-8589934592}
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      TMPDIR: /var/lib/astrakriti/companion/tmp
+    volumes:
+      - astrakriti_companion_data:/var/lib/astrakriti
+    expose:
+      - "5001"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  webapp:
+    depends_on:
+      - astrakriti-companion
+    environment:
+      ASTRAKRITI_COMPANION_URL: http://astrakriti-companion:5001
+      ASTRAKRITI_COMPANION_TOKEN: ${ASTRAKRITI_COMPANION_TOKEN:?Set ASTRAKRITI_COMPANION_TOKEN to a random secret}
+
+volumes:
+  astrakriti_companion_data:

@@ -1,0 +1,175 @@
+{
+  "temporary_fixture": true,
+  "fixture_name": "overview-processing-reference",
+  "state": "active_processing",
+  "utility": {
+    "system_health": {
+      "label": "SYSTEM HEALTH",
+      "status": "healthy"
+    },
+    "webodm": {
+      "label": "WebODM connected",
+      "status": "healthy"
+    },
+    "worker": {
+      "label": "Worker 01 healthy",
+      "status": "healthy"
+    },
+    "storage": {
+      "label": "412 GB free",
+      "status": "warning"
+    },
+    "timestamp": "SEP 18, 2026 16:32:17"
+  },
+  "summary": {
+    "active": 1,
+    "completed": 12,
+    "failed": 2
+  },
+  "active_run": {
+    "id": "R2",
+    "mission": "SITE ALPHA",
+    "subtitle": "Field survey / reconstruction set",
+    "stage": "GENERATING POINT CLOUD",
+    "status": "processing",
+    "progress": 42,
+    "frame_count": 6482,
+    "telemetry_count": 6421,
+    "started": "started 2h 14m ago",
+    "point_count": "3,218,764 points",
+    "elevation": {
+      "min": "78.2 m",
+      "max": "124.6 m"
+    },
+    "coordinates": [
+      "E 672418.3",
+      "N 5812043.7",
+      "Z 102.6 m"
+    ],
+    "media": {
+      "orthophoto": {
+        "src": "/assets/orthophoto-preview.jpg",
+        "label": "ORTHOPHOTO / PROJECT PREVIEW",
+        "meta": "R1 evidence · preview only",
+        "placeholder": false
+      },
+      "point_cloud": {
+        "src": "/assets/point-cloud-placeholder.png",
+        "label": "POINT CLOUD / ELEVATION PREVIEW",
+        "meta": "Technical placeholder · R2 processing",
+        "placeholder": true
+      }
+    },
+    "pipeline": [
+      {
+        "label": "INGEST",
+        "status": "complete",
+        "value": "100%"
+      },
+      {
+        "label": "FRAME EXTRACTION",
+        "status": "complete",
+        "value": "100%"
+      },
+      {
+        "label": "FEATURE MATCHING",
+        "status": "complete",
+        "value": "100%"
+      },
+      {
+        "label": "SPARSE RECONSTRUCTION",
+        "status": "complete",
+        "value": "100%"
+      },
+      {
+        "label": "DENSE RECONSTRUCTION",
+        "status": "processing",
+        "value": "42%"
+      },
+      {
+        "label": "MESH",
+        "status": "pending",
+        "value": "—"
+      },
+      {
+        "label": "TEXTURE",
+        "status": "pending",
+        "value": "—"
+      }
+    ]
+  },
+  "recent_reconstructions": [
+    {
+      "id": "R1",
+      "name": "SITE WEST",
+      "status": "failed",
+      "updated": "1 day ago"
+    },
+    {
+      "id": "R2",
+      "name": "SITE ALPHA",
+      "status": "processing",
+      "updated": "2 hours ago"
+    },
+    {
+      "id": "R3",
+      "name": "FACILITY NORTH",
+      "status": "complete",
+      "updated": "1 day ago"
+    },
+    {
+      "id": "R4",
+      "name": "TERRAIN BLOCK",
+      "status": "complete",
+      "updated": "3 days ago"
+    }
+  ],
+  "artifacts": [
+    {
+      "label": "Orthophoto",
+      "format": "GeoTIFF",
+      "source_path": "evidence/phase4/webodm-real-run/artifacts/orthophoto.tif"
+    },
+    {
+      "label": "Point Cloud",
+      "format": "LAZ",
+      "source_path": "evidence/phase4/webodm-real-run/artifacts/georeferenced_model.laz"
+    },
+    {
+      "label": "Textured Model",
+      "format": "glTF",
+      "source_path": "runs/images-r1-local-20260916/webodm/run-20260915T183608593371Z-2c058e1cf5/artifacts/textured_model.glb"
+    },
+    {
+      "label": "Report",
+      "format": "PDF",
+      "source_path": "evidence/phase4/webodm-real-run/artifacts/report.pdf"
+    }
+  ],
+  "notices": [
+    {
+      "kind": "warning",
+      "title": "Low disk space on /data",
+      "detail": "412 GB remaining (18% of 2.2 TB)",
+      "timestamp": "1 hour ago",
+      "action": "Review storage"
+    },
+    {
+      "kind": "failed",
+      "title": "Reconstruction R1 failed",
+      "detail": "Bundle adjustment did not converge",
+      "timestamp": "1 day ago",
+      "action": "Open run"
+    }
+  ],
+  "empty_state": {
+    "title": "NO ACTIVE RECONSTRUCTION",
+    "body": "The workspace is idle. Start a new reconstruction to process frames, associate telemetry, and generate maps, models, and evidence reports.",
+    "action": "NEW RECONSTRUCTION →"
+  },
+  "first_use_state": {
+    "title": "NO MISSIONS YET",
+    "body": "Create or select a Mission, add video and telemetry, review preflight checks, then start a Run.",
+    "action": "NEW RECONSTRUCTION →"
+  }
+}

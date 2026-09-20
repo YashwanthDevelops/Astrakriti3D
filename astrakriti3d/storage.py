@@ -41,6 +41,35 @@ class JobStore:
     def update(self, local_id, **fields):
         fields["updated_at"] = now(); fields = {k:(json.dumps(v) if k in {"diagnostics","artifacts"} and not isinstance(v,str) else v) for k,v in fields.items()}
         with self.db() as c: c.execute("UPDATE jobs SET "+", ".join(f"{k}=?" for k in fields)+" WHERE local_id=?", (*fields.values(),local_id))
+    def reserve_submission(self, local_id, project_id):
+        """Atomically reserve the persisted logical submission before calling WebODM."""
+        with self.db() as c:
+            c.row_factory = sqlite3.Row
+            row = c.execute("SELECT * FROM jobs WHERE local_id=?", (local_id,)).fetchone()
+            if not row: raise KeyError(local_id)
+            if row["task_id"]:
+                return dict(row)
+            if row["state"] == "submitting":
+                raise RuntimeError("submission is already in progress or requires recovery")
+            changed = c.execute(
+                "UPDATE jobs SET project_id=?, state=?, updated_at=? WHERE local_id=? AND task_id IS NULL AND state NOT IN ('submitting','completed','cancelled')",
+                (project_id, "submitting", now(), local_id),
+            ).rowcount
+            if changed != 1:
+                raise RuntimeError("submission reservation was lost; reload the persisted job")
+            row = c.execute("SELECT * FROM jobs WHERE local_id=?", (local_id,)).fetchone()
+            return dict(row)
+    def record_submission(self, local_id, project_id, task_id):
+        """Conditionally attach one remote identity; conflicting links are rejected."""
+        task_id = str(task_id)
+        with self.db() as c:
+            c.row_factory = sqlite3.Row
+            row = c.execute("SELECT * FROM jobs WHERE local_id=?", (local_id,)).fetchone()
+            if not row: raise KeyError(local_id)
+            if row["task_id"] and str(row["task_id"]) != task_id:
+                raise ValueError("job is already linked to a different WebODM task")
+            c.execute("UPDATE jobs SET project_id=?, task_id=?, state=?, updated_at=? WHERE local_id=?", (project_id, task_id, "submitted", now(), local_id))
+            return dict(c.execute("SELECT * FROM jobs WHERE local_id=?", (local_id,)).fetchone())
     def event(self, local_id, event):
         with self.db() as c:
             r=c.execute("SELECT event_history FROM jobs WHERE local_id=?",(local_id,)).fetchone(); history=json.loads(r[0] or "[]")

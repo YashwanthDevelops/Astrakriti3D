@@ -2,6 +2,31 @@ import json, hashlib
 from pathlib import Path
 import pytest
 from astrakriti3d.baseline import BaselineError, inventory_baseline
+from astrakriti3d.recovery import run_reconstruction
+
+
+def test_recovery_reuses_persisted_task_after_restart(tmp_path):
+    video = tmp_path / "video.mp4"; video.write_bytes(b"video")
+    images = tmp_path / "images"; images.mkdir()
+    for name in ("a.jpg", "b.jpg"):
+        (images / name).write_bytes(name.encode())
+    config = type("C", (), {"base_url": "http://webodm", "username": "u", "password": "p", "timeout": 1, "db_path": tmp_path / "jobs.sqlite"})()
+    class Client:
+        submits = 0
+        def __init__(self, config): pass
+        def authenticate(self): pass
+        def find_or_create_project(self): return "p"
+        def submit_task(self, *args, **kwargs): Client.submits += 1; return "remote-task"
+        def task(self, p, t): return {"status": 40, "available_assets": ["shots.geojson"]}
+        def output(self, p, t): return "output"
+        def download(self, p, t, asset, destination):
+            destination.parent.mkdir(parents=True, exist_ok=True); destination.write_text("asset")
+        def cancel(self, p, t): pass
+    pre = lambda *args, **kwargs: {"status": "PASS"}
+    first = run_reconstruction(video, images, tmp_path / "runs", mode="local", config=config, preflight_runner=pre, client_factory=Client, poll_seconds=0)
+    second = run_reconstruction(video, images, tmp_path / "runs", mode="local", config=config, preflight_runner=pre, client_factory=Client, poll_seconds=0)
+    assert first["ok"] and second["ok"] and Client.submits == 1
+    assert any(json.loads(line)["operation"] == "reconcile_task" for line in (tmp_path / "runs" / Path(second["run_dir"]).name / "api_log.jsonl").read_text().splitlines())
 
 def fixture(tmp_path, complete=True):
     root=tmp_path/'run'; art=root/'artifacts'; art.mkdir(parents=True)

@@ -1,6 +1,7 @@
 import hashlib, json, time, uuid
 from pathlib import Path
 from .storage import JobStore, manifest_for_images, fingerprint, preflight_report, now
+from integrations.webodm_adapter import WebODMAdapter
 
 STATUS={10:"queued",20:"running",30:"failed",40:"completed",50:"cancelled"}
 def run(config, images, output, options=None, cancel_after=None, client=None, geo_txt=None, mode=None):
@@ -25,15 +26,24 @@ def run(config, images, output, options=None, cancel_after=None, client=None, ge
     effective_mode = mode or ("georeferenced" if geo_txt else "local")
     result={"schema_version":"1.0","ok":False,"mode":effective_mode,"local_job_id":local_id,"fingerprint":fp,"events":[],"preflight":report}
     try:
-        config.validate(); client=client or __import__("astrakriti3d.client",fromlist=["WebODMClient"]).WebODMClient(config); client.authenticate(); result["authenticated"]=True
-        project_id=existing["project_id"] if existing and existing["project_id"] else client.find_or_create_project(); store.update(local_id,project_id=project_id,state="submitted")
-        if existing and existing["task_id"]: task_id=existing["task_id"]
-        else: task_id=client.submit_task(project_id,manifest,options,geo_txt=geo_txt) if geo_txt else client.submit_task(project_id,manifest,options)
-        store.update(local_id,task_id=task_id)
+        config.validate(); transport=client or __import__("astrakriti3d.client",fromlist=["WebODMClient"]).WebODMClient(config)
+        adapter = transport if isinstance(transport, WebODMAdapter) else WebODMAdapter(transport)
+        adapter.authenticate(); result["authenticated"]=True
+        persisted = store.get(local_id)
+        project_id = persisted["project_id"] if persisted and persisted["project_id"] else adapter.create_project()
+        persisted = store.reserve_submission(local_id, project_id)
+        project_id = persisted["project_id"]
+        if persisted["task_id"]:
+            task_id = persisted["task_id"]
+        else:
+            task_id = adapter.create_task(project_id,manifest,options,geo_txt=geo_txt) if geo_txt else adapter.create_task(project_id,manifest,options)
+            persisted = store.record_submission(local_id, project_id, task_id)
         start=time.monotonic()
         unknown=0; started=time.monotonic()
         while True:
-            try: task=client.task(project_id,task_id)
+            try:
+                task_status = adapter.get_task_status(project_id, task_id)
+                task = task_status.raw
             except Exception as e:
                 unknown += 1; event={"timestamp":now(),"status":"transient_error","retry_count":unknown,"next_action":"retry_poll","summary":str(e)[:300]}; result["events"].append(event); store.event(local_id,event)
                 if unknown >= config.max_unknown_polls or time.monotonic()-started >= config.max_poll_seconds: raise RuntimeError("polling retry policy exhausted")
@@ -49,14 +59,14 @@ def run(config, images, output, options=None, cancel_after=None, client=None, ge
                 if unknown >= config.max_unknown_polls or time.monotonic()-started >= config.max_poll_seconds: raise RuntimeError("invalid WebODM status retry policy exhausted")
                 time.sleep(config.poll_interval); continue
             unknown=0; progress=task.get("running_progress",task.get("upload_progress",0)); event={"timestamp":now(),"status":STATUS.get(status,"unknown"),"progress":progress,"raw_status":status}; result["events"].append(event); store.event(local_id,event); store.update(local_id,state={10:"submitted",20:"running",30:"failed",40:"collecting",50:"cancelled"}.get(status,"running"),progress=float(progress or 0),diagnostics=task.get("last_error"))
-            if cancel_after is not None and time.monotonic()-start>=cancel_after and status not in {30,40,50}: client.cancel(project_id,task_id); store.update(local_id,state="cancelled"); result["cancelled"]=True; result["ok"]=False; break
+            if cancel_after is not None and time.monotonic()-start>=cancel_after and status not in {30,40,50}: adapter.cancel_task(project_id,task_id); store.update(local_id,state="cancelled"); result["cancelled"]=True; result["ok"]=False; break
             if status==30: raise RuntimeError(task.get("last_error") or "remote task failed")
             if status==50: result["cancelled"]=True; break
             if status==40:
                 artifacts=[]
                 dest=Path(output)/"artifacts"/"orthophoto.tif"
                 try:
-                    client.download(project_id,task_id,"orthophoto.tif",dest)
+                    adapter.get_assets(project_id,task_id,["orthophoto.tif"],dest.parent)
                     digest=hashlib.sha256(dest.read_bytes()).hexdigest()
                     artifacts.append({"name":"orthophoto.tif","path":str(dest),"sha256":digest})
                     result["artifact"]={"path":str(dest),"sha256":digest}
@@ -65,7 +75,7 @@ def run(config, images, output, options=None, cancel_after=None, client=None, ge
                     if asset in task.get("available_assets",[]):
                         try:
                             adest=Path(output)/"artifacts"/asset
-                            client.download(project_id,task_id,asset,adest)
+                            adapter.get_assets(project_id,task_id,[asset],adest.parent)
                             adigest=hashlib.sha256(adest.read_bytes()).hexdigest()
                             artifacts.append({"name":asset,"path":str(adest),"sha256":adigest})
                         except Exception: pass

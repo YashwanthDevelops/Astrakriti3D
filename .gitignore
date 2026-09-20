@@ -9,6 +9,26 @@ inputs/
 *.db
 *.sqlite3
 
+# Flight media and telemetry inputs remain local fixtures.
+*.mp4
+*.MP4
+*.mov
+*.MOV
+*.mkv
+*.MKV
+*.avi
+*.AVI
+*.webm
+*.WEBM
+*.m4v
+*.M4V
+*.mts
+*.MTS
+*.m2ts
+*.M2TS
+*.srt
+*.SRT
+
 # Local caches and large generated audit output
 .pytest_cache/
 __pycache__/

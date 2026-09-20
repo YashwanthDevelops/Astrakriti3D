@@ -1,1 +1,449 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Astrakriti3D / Evidence</title><link rel="stylesheet" href="/styles.css"></head><body><main class="shell"><header><div><p class="eyebrow">READ-ONLY EVIDENCE CONSOLE</p><h1>Astrakriti<span>3D</span></h1><p class="lede">A grounded view of the production reconstruction and what the evidence can—and cannot—say.</p></div><div class="status"><i></i><span>Local evidence view</span><small id="updated">Loading…</small></div></header><section class="hero"><div><p class="eyebrow">CURRENT PRODUCTION BASELINE</p><h2>R1 / all-frame reconstruction</h2><p>194 extracted frames · 194 telemetry associations · completed WebODM artifacts</p></div><strong class="stamp">VERIFIED<br><em>R1</em></strong></section><section class="metrics" id="metrics"></section><section class="grid"><article class="panel"><div class="panel-head"><div><p class="eyebrow">EVIDENCE STATES</p><h2>What is known</h2></div><span class="quiet">No processing controls</span></div><div id="evidence"></div></article><article class="panel"><div class="panel-head"><div><p class="eyebrow">PIPELINE LANES</p><h2>Production vs experiment</h2></div></div><div class="lanes"><div class="lane active"><b>R1</b><div><strong>Production baseline</strong><p>All 194 frames · completed artifacts</p></div><span>ACTIVE</span></div><div class="lane"><b>R2</b><div><strong>Classical selector</strong><p>Experimental · not promoted</p></div><span>HOLD</span></div><div class="lane"><b>R3</b><div><strong>LightGlue selector</strong><p>Experimental · all-frame fallback</p></div><span>HOLD</span></div></div></article></section><section class="panel artifacts"><div class="panel-head"><div><p class="eyebrow">ARTIFACT REGISTER</p><h2>Completed outputs</h2></div><span id="artifact-count" class="quiet"></span></div><div id="artifacts"></div></section><nav class="future"><p class="eyebrow">NEXT SURFACES</p><button>Frame review <small>Coming later</small></button><button>Telemetry review <small>Coming later</small></button><button>Map viewer <small>Coming later</small></button><button>3D viewer <small>Coming later</small></button><button>Reports &amp; exports <small>Coming later</small></button></nav><footer>Evidence is read from the current project directory. Accuracy, scale, and completeness remain explicitly labelled where independent references are absent.</footer></main><script src="/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f3ed">
+  <title>Astrakriti3D / Overview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="/styles.css?v=ingest-reconstruction-1">
+</head>
+<body>
+  <div class="app-shell" id="app-shell">
+    <aside class="nav-rail" id="nav-rail">
+      <div class="rail-top">
+        <button class="rail-toggle" id="rail-toggle" type="button" aria-label="Collapse navigation" aria-expanded="true">
+          <i class="ph ph-sidebar-simple" aria-hidden="true"></i>
+        </button>
+        <a class="wordmark" href="#overview" aria-label="Astrakriti3D overview">
+          <span class="wordmark-mark" aria-hidden="true"><i class="ph ph-cube-focus"></i></span>
+          <span class="wordmark-text">ASTRAKRITI<span>3D</span></span>
+        </a>
+      </div>
+
+      <nav class="primary-nav" aria-label="Primary navigation">
+        <a class="nav-link is-active" href="#overview" data-nav="overview" aria-current="page">
+          <i class="ph ph-house-line" aria-hidden="true"></i><span>Overview</span>
+        </a>
+        <a class="nav-link" href="#ingest" data-nav="ingest">
+          <i class="ph ph-upload-simple" aria-hidden="true"></i><span>Ingest</span>
+        </a>
+        <a class="nav-link" href="#missions" data-nav="missions">
+          <i class="ph ph-map-trifold" aria-hidden="true"></i><span>Missions</span>
+        </a>
+        <a class="nav-link" href="#reconstruction" data-nav="reconstruction">
+          <i class="ph ph-cube" aria-hidden="true"></i><span>Reconstructions</span>
+        </a>
+        <a class="nav-link" href="#artifacts" data-nav="artifacts">
+          <i class="ph ph-files" aria-hidden="true"></i><span>Artifacts</span>
+        </a>
+        <a class="nav-link" href="#reports" data-nav="reports">
+          <i class="ph ph-chart-bar" aria-hidden="true"></i><span>Reports</span>
+        </a>
+      </nav>
+
+      <div class="nav-rule" aria-hidden="true"></div>
+
+      <nav class="secondary-nav" aria-label="System navigation">
+        <a class="nav-link" href="#processing" data-nav="processing">
+          <i class="ph ph-gear-six" aria-hidden="true"></i><span>Processing</span>
+        </a>
+        <a class="nav-link" href="#system" data-nav="system">
+          <i class="ph ph-hard-drives" aria-hidden="true"></i><span>System</span>
+        </a>
+        <a class="nav-link" href="#settings" data-nav="settings">
+          <i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="rail-footer">
+        <span class="status-dot status-dot--healthy"></span>
+        <span>LOCAL EVIDENCE VIEW</span>
+      </div>
+    </aside>
+
+    <main class="workspace" id="overview">
+      <header class="utility-line" aria-label="System health">
+        <div class="utility-health">
+          <span id="utility-health-label">SYSTEM HEALTH UNAVAILABLE</span>
+          <span class="status-dot status-dot--neutral" id="utility-health-dot" aria-hidden="true"></span>
+        </div>
+        <div class="utility-item">
+          <span class="status-dot status-dot--neutral" id="utility-webodm-dot" aria-hidden="true"></span>
+          <span id="utility-webodm">WebODM status unavailable</span>
+        </div>
+        <div class="utility-item">
+          <span class="status-dot status-dot--neutral" id="utility-worker-dot" aria-hidden="true"></span>
+          <span id="utility-worker">Worker status unavailable</span>
+        </div>
+        <div class="utility-item utility-storage">
+          <i class="ph ph-database" aria-hidden="true"></i>
+          <span id="utility-storage">Storage status unavailable</span>
+        </div>
+        <time class="utility-time" id="utility-time">—</time>
+      </header>
+
+      <section class="route-page route-page--ingest" aria-labelledby="ingest-title">
+        <div class="route-page-header">
+          <div>
+            <h1 id="ingest-title">PREPARE A MISSION</h1>
+            <p class="route-page-lede">Upload a source video, inspect its metadata, and turn the flight into a clean frame set before reconstruction begins.</p>
+          </div>
+          <div class="route-progress" aria-label="Mission workflow">
+            <span class="route-progress-step is-current"><b>01</b> SOURCE</span>
+            <span class="route-progress-line" aria-hidden="true"></span>
+            <span class="route-progress-step"><b>02</b> FRAMES</span>
+            <span class="route-progress-line" aria-hidden="true"></span>
+            <span class="route-progress-step"><b>03</b> RECONSTRUCT</span>
+          </div>
+        </div>
+
+        <div class="ingest-layout">
+          <section class="ingest-panel ingest-panel--source" aria-labelledby="source-title">
+            <div class="section-heading">
+              <div>
+                <p class="section-label">SOURCE INPUT</p>
+                <h2 id="source-title">Bring in the flight data</h2>
+              </div>
+              <span class="technical panel-state" id="ingest-state">WAITING FOR SOURCE</span>
+            </div>
+
+            <form id="ingest-form" novalidate>
+              <label class="drop-zone" id="video-drop-zone" for="source-video">
+                <input id="source-video" name="video" type="file" accept="video/mp4,video/quicktime,video/x-msvideo,.mp4,.mov,.avi">
+                <span class="drop-zone-icon"><i class="ph ph-film-strip" aria-hidden="true"></i></span>
+                <span class="drop-zone-title">Drop a flight video here</span>
+                <span class="drop-zone-copy">MP4, MOV, or AVI · the original file stays unchanged</span>
+                <span class="drop-zone-action">CHOOSE VIDEO</span>
+              </label>
+
+              <div class="selected-file" id="selected-video" hidden>
+                <span class="selected-file-icon"><i class="ph ph-file-video" aria-hidden="true"></i></span>
+                <span class="selected-file-copy"><strong id="selected-video-name">—</strong><span class="technical" id="selected-video-meta">—</span></span>
+                <button class="icon-button" id="clear-video" type="button" aria-label="Remove selected video"><i class="ph ph-x" aria-hidden="true"></i></button>
+              </div>
+
+              <label class="field-label" for="telemetry-file">OPTIONAL TELEMETRY <span>DJI .SRT or compatible file</span></label>
+              <div class="file-field">
+                <input id="telemetry-file" name="telemetry" type="file" accept=".srt,.txt">
+                <span class="file-field-name" id="telemetry-file-name">No telemetry attached</span>
+                <span class="file-field-action">BROWSE</span>
+              </div>
+
+              <div class="ingest-settings">
+                <label class="field-label" for="frame-interval">FRAME INTERVAL</label>
+                <div class="select-wrap">
+                  <select id="frame-interval" name="interval">
+                    <option value="1">1 second · balanced</option>
+                    <option value="0.5">0.5 seconds · dense</option>
+                    <option value="2">2 seconds · lightweight</option>
+                  </select>
+                  <i class="ph ph-caret-down" aria-hidden="true"></i>
+                </div>
+              </div>
+
+              <p class="form-note"><i class="ph ph-info" aria-hidden="true"></i> The production pipeline uses FFmpeg for deterministic extraction. This page previews the selected frames before submission.</p>
+              <button class="button button--primary button--wide" id="extract-frames" type="button" disabled>EXTRACT FRAMES <span>→</span></button>
+            </form>
+          </section>
+
+          <section class="ingest-panel ingest-panel--frames" aria-labelledby="frames-title">
+            <div class="section-heading">
+              <div>
+                <p class="section-label">FRAME EXTRACTION</p>
+                <h2 id="frames-title">Review the reconstruction inputs</h2>
+              </div>
+              <span class="technical panel-state" id="frame-state">NOT STARTED</span>
+            </div>
+
+            <div class="video-preview-frame" id="video-preview-frame">
+              <video id="source-video-preview" controls preload="metadata" hidden></video>
+              <div class="video-preview-empty" id="video-preview-empty">
+                <i class="ph ph-play-circle" aria-hidden="true"></i>
+                <span>Select a video to inspect its source timeline</span>
+              </div>
+              <div class="video-preview-overlay" id="video-preview-overlay" hidden>
+                <span class="technical" id="video-current-time">00:00.0</span>
+                <span class="technical" id="video-duration">—</span>
+              </div>
+            </div>
+
+            <div class="extraction-summary" id="extraction-summary" hidden>
+              <div><strong class="technical" id="extracted-count">—</strong><span>candidate frames</span></div>
+              <div><strong class="technical" id="extracted-resolution">—</strong><span>source resolution</span></div>
+              <div><strong class="technical" id="extracted-duration">—</strong><span>video duration</span></div>
+            </div>
+
+            <div class="frame-strip" id="frame-strip" aria-live="polite">
+              <div class="frame-empty" id="frame-empty"><i class="ph ph-images" aria-hidden="true"></i><span>Extracted frames will appear here.</span></div>
+            </div>
+
+            <div class="frame-review-footer">
+              <p id="frame-review-note">No frames have been prepared yet.</p>
+              <button class="button button--secondary" id="continue-to-reconstruction" type="button" disabled>OPEN RECONSTRUCTION <span>→</span></button>
+            </div>
+          </section>
+        </div>
+
+        <div class="route-footnote"><i class="ph ph-shield-check" aria-hidden="true"></i><span>Input provenance stays attached to the run: source hash, extraction interval, frame timestamps, and optional telemetry association.</span></div>
+      </section>
+
+      <section class="route-page route-page--reconstruction" aria-labelledby="reconstruction-title">
+        <div class="route-page-header reconstruction-page-header">
+          <div>
+            <div class="breadcrumb-line"><button class="back-link" id="back-to-ingest" type="button"><i class="ph ph-arrow-left" aria-hidden="true"></i> PREPARE ANOTHER MISSION</button></div>
+            <h1 id="reconstruction-title">RECONSTRUCTION WORKSPACE</h1>
+            <p class="route-page-lede" id="reconstruction-subtitle">Completed WebODM output with a measurement-ready surface.</p>
+          </div>
+          <div class="reconstruction-status">
+            <span class="status-dot status-dot--healthy" aria-hidden="true"></span>
+            <span><strong id="reconstruction-status-label">WEBODM TASK COMPLETE</strong><small class="technical" id="reconstruction-run-id">LOCAL PREVIEW</small></span>
+          </div>
+        </div>
+
+        <div class="reconstruction-layout">
+          <section class="reconstruction-viewer" aria-labelledby="viewer-title">
+            <div class="viewer-header">
+              <div>
+                <p class="section-label">OUTPUT SURFACE</p>
+                <h2 id="viewer-title">Inspect the reconstructed site</h2>
+              </div>
+              <div class="viewer-actions">
+                <a class="button button--secondary button--compact" id="open-webodm-viewer" href="#" target="_blank" rel="noopener" hidden>OPEN WEBODM VIEWER <i class="ph ph-arrow-square-out" aria-hidden="true"></i></a>
+                <button class="icon-button" id="viewer-fullscreen" type="button" aria-label="Toggle viewer fullscreen"><i class="ph ph-arrows-out" aria-hidden="true"></i></button>
+              </div>
+            </div>
+
+            <div class="viewer-stage" id="viewer-stage" tabindex="0" aria-label="Reconstruction output. Choose a measurement tool, then select points on this surface.">
+              <img id="reconstruction-image" src="/assets/orthophoto-preview.jpg" alt="Orthophoto preview of the reconstructed site">
+              <div class="viewer-grid-lines" aria-hidden="true"></div>
+              <svg class="measurement-overlay" id="measurement-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+              <div class="viewer-crosshair" id="viewer-crosshair" hidden aria-hidden="true"></div>
+              <div class="viewer-label viewer-label--top"><span id="viewer-layer-label">ORTHOPHOTO</span><span class="technical">WEBODM OUTPUT</span></div>
+              <div class="viewer-label viewer-label--bottom"><span class="technical" id="viewer-coordinate-label">EPSG:4326 · scale from task metadata</span><span id="viewer-interaction-label">SELECT A TOOL TO MEASURE</span></div>
+              <div class="viewer-loading" id="viewer-loading" hidden><i class="ph ph-spinner-gap" aria-hidden="true"></i><span>Loading output surface</span></div>
+            </div>
+
+            <div class="layer-tabs" role="tablist" aria-label="Reconstruction outputs">
+              <button class="layer-tab is-active" type="button" role="tab" aria-selected="true" data-layer="orthophoto">ORTHOPHOTO</button>
+              <button class="layer-tab" type="button" role="tab" aria-selected="false" data-layer="model">3D MODEL</button>
+              <button class="layer-tab" type="button" role="tab" aria-selected="false" data-layer="dsm">DSM / ELEVATION</button>
+            </div>
+          </section>
+
+          <aside class="measurement-panel" aria-labelledby="measurement-title">
+            <div class="measurement-panel-header">
+              <div>
+                <p class="section-label">WEBODM MEASUREMENTS</p>
+                <h2 id="measurement-title">Measure on output</h2>
+              </div>
+              <span class="measurement-badge"><i class="ph ph-check" aria-hidden="true"></i> READY</span>
+            </div>
+            <p class="measurement-intro">Uses the completed WebODM task’s georeferenced surface. Select a tool, then draw directly on the output.</p>
+
+            <div class="measurement-tools" role="toolbar" aria-label="Measurement tools">
+              <button class="measurement-tool" type="button" data-measure-tool="distance" aria-pressed="false"><i class="ph ph-arrows-horizontal" aria-hidden="true"></i><span><strong>Distance</strong><small>Length between points</small></span></button>
+              <button class="measurement-tool" type="button" data-measure-tool="area" aria-pressed="false"><i class="ph ph-polygon" aria-hidden="true"></i><span><strong>Area</strong><small>Draw a closed boundary</small></span></button>
+              <button class="measurement-tool" type="button" data-measure-tool="volume" aria-pressed="false"><i class="ph ph-cube" aria-hidden="true"></i><span><strong>Volume</strong><small>DSM-backed surface volume</small></span></button>
+            </div>
+
+            <div class="measurement-instruction" id="measurement-instruction" role="status"><i class="ph ph-cursor-click" aria-hidden="true"></i><span>Select Distance, Area, or Volume to begin.</span></div>
+
+            <div class="measurement-list-header"><span>MEASUREMENT LOG</span><button class="text-button" id="clear-measurements" type="button">CLEAR</button></div>
+            <div class="measurement-list" id="measurement-list">
+              <div class="measurement-empty" id="measurement-empty"><i class="ph ph-ruler" aria-hidden="true"></i><span>No measurements saved in this workspace.</span></div>
+            </div>
+
+            <div class="measurement-footer">
+              <button class="button button--secondary button--wide" id="export-measurements" type="button"><i class="ph ph-download-simple" aria-hidden="true"></i> EXPORT GEOJSON</button>
+              <p><i class="ph ph-info" aria-hidden="true"></i> WebODM’s measurement plugin provides length, area, volume, and GeoJSON export. Volume requires a DSM output.</p>
+            </div>
+          </aside>
+        </div>
+
+        <div class="reconstruction-detail-grid">
+          <section class="detail-strip" aria-labelledby="output-inventory-title">
+            <div class="section-heading"><div><p class="section-label">OUTPUT INVENTORY</p><h2 id="output-inventory-title">Available artifacts</h2></div><span class="technical">TASK OUTPUTS</span></div>
+            <div class="artifact-chips"><span><i class="ph ph-image" aria-hidden="true"></i> orthophoto.tif</span><span><i class="ph ph-cube" aria-hidden="true"></i> textured_model.glb</span><span><i class="ph ph-chart-line-up" aria-hidden="true"></i> dsm.tif</span><span><i class="ph ph-file-text" aria-hidden="true"></i> report.pdf</span></div>
+          </section>
+          <section class="detail-strip" aria-labelledby="provenance-title">
+            <div class="section-heading"><div><p class="section-label">RUN PROVENANCE</p><h2 id="provenance-title">Keep the result explainable</h2></div><span class="technical">RECORDED</span></div>
+            <dl class="provenance-list"><div><dt>FRAMES</dt><dd class="technical" id="reconstruction-frame-count">— candidate frames</dd></div><div><dt>CRS</dt><dd class="technical" id="reconstruction-crs">EPSG:4326 · task metadata</dd></div><div><dt>MEASUREMENT SCALE</dt><dd id="reconstruction-scale">Inherited from WebODM task output</dd></div></dl>
+          </section>
+        </div>
+      </section>
+
+      <section class="page-header" aria-labelledby="page-title">
+        <h1 id="page-title">OVERVIEW</h1>
+        <p class="operational-summary">
+          <span id="summary-active">—</span> active reconstruction
+          <span class="summary-separator">·</span>
+          <span id="summary-completed">—</span> completed
+          <span class="summary-separator">·</span>
+          <span id="summary-failed">—</span> failed
+        </p>
+        <p class="sr-only" id="loading-label" aria-live="polite">Loading dashboard data</p>
+      </section>
+
+      <section class="active-workspace" id="active-workspace" aria-labelledby="active-section-label">
+        <div class="active-main" id="active-main">
+          <div class="section-label" id="active-section-label">ACTIVE RECONSTRUCTION</div>
+          <div class="run-heading">
+            <div>
+              <h2><span id="run-id">—</span><span class="run-divider">·</span><span id="run-mission">—</span></h2>
+              <p id="run-subtitle">Reconstruction data unavailable</p>
+            </div>
+            <div class="current-stage" id="current-stage">Processing stage unavailable</div>
+          </div>
+
+          <div class="evidence-pair">
+            <figure class="evidence-view evidence-view--orthophoto" data-view="orthophoto">
+              <div class="view-frame">
+                <img id="orthophoto-image" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Orthophoto project preview, source evidence">
+                <div class="view-scrim" aria-hidden="true"></div>
+                <div class="view-topline">
+                  <strong id="orthophoto-label">ORTHOPHOTO / PROJECT PREVIEW</strong>
+                  <span id="orthophoto-meta">Preview unavailable</span>
+                </div>
+                <span class="view-missing" hidden>ORTHOPHOTO PREVIEW<br>No orthophoto artifact available</span>
+              </div>
+              <figcaption>PROJECT EVIDENCE <span id="orthophoto-source">PREVIEW UNAVAILABLE</span></figcaption>
+            </figure>
+
+            <figure class="evidence-view" data-view="point-cloud">
+              <div class="view-frame view-frame--dark">
+                <img id="point-cloud-image" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Point cloud elevation technical preview">
+                <div class="view-scrim" aria-hidden="true"></div>
+                <div class="view-topline">
+                  <strong id="point-cloud-label">POINT CLOUD / ELEVATION PREVIEW</strong>
+                  <span id="point-cloud-meta">Preview unavailable</span>
+                </div>
+                <div class="elevation-legend" data-real-only aria-label="Elevation range">
+                  <i></i><span id="elevation-max">—</span><span id="elevation-min">—</span>
+                </div>
+                <div class="point-count" id="point-count" data-real-only>Point count unavailable</div>
+                <div class="axis" data-real-only aria-label="XYZ axis"><span>Z</span><span>Y</span><span>X</span></div>
+                <div class="coordinate-readout" id="coordinate-readout" data-real-only>
+                  <span>Coordinates unavailable</span>
+                </div>
+                <span class="placeholder-copy" hidden>No point-cloud artifact available</span>
+                <span class="view-missing" hidden>POINT CLOUD / ELEVATION PREVIEW<br>No point-cloud artifact available</span>
+              </div>
+              <figcaption>PROCESSING VIEW <span id="point-cloud-source">PREVIEW UNAVAILABLE</span></figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <div class="empty-state" id="empty-state" hidden>
+          <div class="empty-state-main">
+            <div class="empty-state-mark"><i class="ph ph-cube-focus" aria-hidden="true"></i></div>
+            <p class="section-label" id="empty-state-title">NO ACTIVE RECONSTRUCTION</p>
+            <p id="empty-state-body">The workspace is idle.</p>
+            <p class="empty-state-detail" id="empty-state-detail" hidden>Start by creating a Mission, adding a source video, optionally adding telemetry, and reviewing the preflight checks before processing begins.</p>
+            <div class="idle-state-technical" id="idle-state-technical" hidden aria-hidden="true">
+              <svg viewBox="0 0 220 52" role="presentation" focusable="false">
+                <path class="idle-grid" d="M1 43h218M18 34h184M35 25h150M52 16h116" />
+                <path class="idle-axis" d="M17 43V9m0 34 12-12m-12 12L5 31" />
+                <circle cx="73" cy="25" r="4" />
+                <circle cx="110" cy="25" r="4" />
+                <circle cx="147" cy="25" r="4" />
+                <path class="idle-pipeline" d="M77 25h29m8 0h29" />
+              </svg>
+            </div>
+            <button class="button button--primary" id="empty-state-action" type="button">NEW RECONSTRUCTION <span>→</span></button>
+          </div>
+          <div class="empty-state-support">
+            <div class="empty-state-wireframe" id="empty-state-technical" hidden aria-hidden="true">
+              <svg viewBox="0 0 180 88" role="presentation" focusable="false">
+                <path d="M9 69 40 43 74 55 112 22 171 51" />
+                <path d="M9 69 9 78 171 78 171 51" />
+                <path d="M40 43v17M74 55V40M112 22v38M145 39v21" />
+                <path d="m21 69 26-20 28 9 37-29 48 22" />
+                <path d="M28 26h31M28 32h18M130 14h22M130 20h14" />
+              </svg>
+            </div>
+            <ol class="setup-sequence" id="empty-state-setup" aria-label="First-use setup sequence" hidden></ol>
+            <section class="latest-activity" id="latest-activity" aria-labelledby="latest-activity-title" hidden>
+              <p class="section-label" id="latest-activity-title">LAST RUN</p>
+              <dl class="latest-run-grid" id="latest-run-grid">
+                <div><dt>RUN ID</dt><dd><span class="technical latest-run-id" id="latest-run-id">—</span></dd></div>
+                <div><dt>NAME</dt><dd id="latest-run-name">—</dd></div>
+                <div><dt>STATUS</dt><dd><span class="latest-run-status" id="latest-run-status">—</span></dd></div>
+                <div><dt>UPDATED</dt><dd class="technical" id="latest-run-updated">—</dd></div>
+                <div><dt>AVAILABLE OUTPUTS</dt><dd class="technical latest-run-outputs" id="latest-run-outputs">—</dd></div>
+              </dl>
+              <p class="latest-run-empty" id="latest-run-empty" hidden>No previous Run available</p>
+            </section>
+          </div>
+        </div>
+
+        <aside class="processing-inspector" id="processing-inspector" aria-labelledby="processing-title">
+          <div class="section-label" id="processing-title">PROCESSING PROGRESS</div>
+          <div class="progress-summary">
+            <strong id="progress-value">—</strong>
+            <div>
+              <p id="progress-counts">— frames · — telemetry records</p>
+              <span id="progress-started">Processing state unavailable</span>
+            </div>
+          </div>
+          <div class="progress-track" role="progressbar" aria-label="Reconstruction progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span id="progress-fill"></span>
+          </div>
+          <div class="pipeline-header"><span>STAGE</span><span>STATUS</span></div>
+          <div class="pipeline-list" id="pipeline-list"></div>
+          <button class="button button--primary open-run" id="open-run" type="button">OPEN RECONSTRUCTION <span>→</span></button>
+        </aside>
+      </section>
+
+      <section class="lower-sections" aria-label="Dashboard details">
+        <section class="open-section" id="reconstructions" aria-labelledby="recent-title">
+          <div class="section-heading">
+            <h2 id="recent-title">RECENT RECONSTRUCTIONS</h2>
+            <button class="text-button" id="refresh-button" type="button">REFRESH</button>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr><th scope="col">ID</th><th scope="col">NAME</th><th scope="col">STATUS</th><th scope="col">UPDATED</th></tr>
+            </thead>
+            <tbody id="recent-list"></tbody>
+          </table>
+          <p class="section-empty" id="recent-empty" hidden>No Runs have been created yet.</p>
+        </section>
+
+        <section class="open-section" id="artifacts" aria-labelledby="artifacts-title">
+          <div class="section-heading">
+            <h2 id="artifacts-title">LATEST ARTIFACTS</h2>
+            <button class="text-button" id="view-artifacts" type="button">VIEW ALL</button>
+          </div>
+          <ul class="artifact-list" id="artifact-list"></ul>
+          <p class="section-empty" id="artifact-empty" hidden>Artifacts will appear here after the first successful Run.</p>
+        </section>
+
+        <section class="open-section notices-section" id="notices" aria-labelledby="notices-title">
+          <div class="section-heading">
+            <h2 id="notices-title">NOTICES</h2>
+            <button class="text-button" id="view-notices" type="button">VIEW LOG</button>
+          </div>
+          <div class="notice-list" id="notice-list"></div>
+          <p class="section-empty" id="notice-empty" hidden>No active notices.</p>
+        </section>
+      </section>
+
+      <footer class="workspace-footer">
+        <span id="footer-source">Evidence is read from the current project directory.</span>
+        <span id="footer-limitations">Accuracy, scale, and completeness remain explicitly labelled where independent references are absent.</span>
+      </footer>
+      <div class="workspace-note" id="workspace-note" role="status" aria-live="polite" hidden></div>
+    </main>
+  </div>
+
+  <template id="legacy-state-copy">
+    <span>Frame review</span>
+    <span>Coming later</span>
+  </template>
+  <script src="/app.js?v=ingest-reconstruction-1"></script>
+</body>
+</html>

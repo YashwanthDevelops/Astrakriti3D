@@ -1,0 +1,8 @@
+**/.git
+.secret_key
+node_modules/
+.venv/
+app/media_test/
+docs/
+screenshots/
+contrib/

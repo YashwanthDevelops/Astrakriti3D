@@ -1,0 +1,10 @@
+{
+  "name": "Astrakriti3D evidence workspace",
+  "webodmMinVersion": "3.3.0",
+  "description": "A native WebODM evidence workspace with task-scoped measurements and real artifact views.",
+  "version": "0.1.0",
+  "author": "Astrakriti3D contributors",
+  "tags": ["astrakriti3d", "evidence", "measurements", "photogrammetry"],
+  "experimental": true,
+  "deprecated": false
+}
