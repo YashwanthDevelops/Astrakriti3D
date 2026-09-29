@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/assets/readme/banner.svg" width="100%" alt="Drone capture transitioning into an explorable terrain reconstruction">
+  <img src="docs/assets/readme/banner-20x8.png" width="100%" alt="Drone surveying rugged terrain as it transitions into a 3D surface mesh">
 </p>
 
 <p align="center">
