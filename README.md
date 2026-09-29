@@ -11,6 +11,8 @@
 
 <p align="center">
   <img src="docs/assets/readme/banner-20x8.png" width="100%" alt="Drone surveying rugged terrain as it transitions into a 3D surface mesh">
+  <br>
+  <sub>Illustrative preview; not a measured reconstruction result.</sub>
 </p>
 
 <p align="center">
