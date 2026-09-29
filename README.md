@@ -9,16 +9,16 @@
   A unified workflow for video preparation, telemetry alignment, reconstruction, inspection, and export.
 </p>
 
+<h2 align="center">
+  <a href="https://astrakriti3d.vercel.app/">Explore the Astrakriti3D landing page ↗</a>
+</h2>
+
+<p align="center"><strong>Presentation website</strong> · Backend integration coming later.</p>
+
 <p align="center">
   <img src="docs/assets/readme/banner-20x8.png" width="100%" alt="Drone surveying rugged terrain as it transitions into a 3D surface mesh">
   <br>
   <sub>Illustrative preview; not a measured reconstruction result.</sub>
-</p>
-
-<p align="center">
-  <a href="https://astrakriti3d.vercel.app/">Visit the landing page</a>
-  <br>
-  <sub>Presentation website — backend integration coming later.</sub>
 </p>
 
 <p align="center">
@@ -171,16 +171,17 @@ flowchart LR
 
 The companion prepares video and telemetry inputs. The reconstruction layer manages projects, processing, task status, viewers, and generated files, which are brought together in the Astrakriti3D workspace.
 
-| Location | Purpose |
-| --- | --- |
-| <code>run_astrakriti.py</code> | CLI entry point for preparation and integrated runs. |
-| <code>astrakriti3d/</code> | Video and telemetry preparation, orchestration, companion API, and recovery. |
-| <code>Reconstruction layer/</code> | Integrated reconstruction application, Astrakriti3D interface, and Compose deployment. |
-| <code>web/</code> | Static presentation landing page. |
-| <code>config/</code> | Processing contracts and configuration. |
-| <code>docs/</code> | API, deployment, architecture, and operating references. |
-| <code>scripts/</code> | Diagnostics and offline validation tools. |
-| <code>tests/</code> | Automated tests for preparation and orchestration. |
+```text
+Astrakriti3D/
+├── run_astrakriti.py       # CLI entry point
+├── astrakriti3d/           # Video and telemetry preparation, API, orchestration
+├── Reconstruction layer/   # Integrated application and Compose deployment
+├── web/                    # Presentation landing page
+├── config/                 # Processing contracts and configuration
+├── docs/                   # API, deployment, architecture, and operating guides
+├── scripts/                # Diagnostics and offline validation tools
+└── tests/                  # Preparation and orchestration tests
+```
 
 ## Roadmap and credits
 
