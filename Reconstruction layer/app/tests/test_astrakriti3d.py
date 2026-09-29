@@ -26,6 +26,7 @@ import rasterio
 from pyproj import Transformer
 from rasterio.transform import from_origin
 from rest_framework.test import APIRequestFactory, force_authenticate
+import requests
 
 from app.models import (
     AstrakritiLegacyLink,
@@ -48,6 +49,7 @@ from coreplugins.astrakriti3d.api import (
     _stage_companion_upload,
     _write_task_preparation_review,
 )
+from coreplugins.astrakriti3d.companion import AstrakritiCompanionClient
 
 
 class TestAstrakriti3D(BootTestCase):
@@ -1301,3 +1303,67 @@ class TestAstrakriti3D(BootTestCase):
 
             call_command("astrakriti_reconcile", "--source", str(source), "--apply", stdout=io.StringIO())
             self.assertEqual(AstrakritiLegacyLink.objects.count(), 1)
+
+
+class TestAstrakritiCompanionStreaming(unittest.TestCase):
+    def test_start_preparation_streams_multipart_files_in_bounded_chunks(self):
+        class ReadTrackingFile(io.BytesIO):
+            name = r"C:\private\source\DJI_0142.MP4"
+            content_type = "video/mp4"
+
+            def __init__(self, contents):
+                super().__init__(contents)
+                self.read_sizes = []
+
+            def read(self, size=-1):
+                self.read_sizes.append(size)
+                return super().read(size)
+
+        video = ReadTrackingFile(b"v" * (2 * 1024 * 1024 + 17))
+        observed = {}
+
+        def send_request(method, url, headers, timeout, **kwargs):
+            self.assertEqual(method, "POST")
+            self.assertEqual(url, "http://companion/v1/preparations")
+            self.assertNotIn("files", kwargs)
+            body = kwargs["data"]
+            self.assertFalse(isinstance(body, (bytes, bytearray)))
+            self.assertEqual(int(headers["Content-Length"]), len(body))
+            prepared = requests.Request(
+                method,
+                url,
+                data=body,
+                headers=headers,
+            ).prepare()
+            self.assertIs(prepared.body, body)
+            self.assertEqual(prepared.headers["Content-Length"], str(len(body)))
+            self.assertEqual(video.tell(), 0)
+            chunks = list(body)
+            observed["body"] = b"".join(chunks)
+            observed["content_type"] = headers["Content-Type"]
+            return SimpleNamespace(
+                status_code=202,
+                json=lambda: {"job_id": "submission-1", "status": "queued"},
+            )
+
+        client = AstrakritiCompanionClient(
+            base_url="http://companion",
+            token="test-token",
+        )
+        with patch(
+            "coreplugins.astrakriti3d.companion.requests.request",
+            side_effect=send_request,
+        ):
+            result = client.start_preparation("submission-1", "local", video)
+
+        body = observed["body"]
+        self.assertEqual(result["status"], "queued")
+        self.assertIn("boundary=----Astrakriti3D", observed["content_type"])
+        self.assertIn(b'name="job_id"', body)
+        self.assertIn(b"submission-1", body)
+        self.assertIn(b'name="mode"', body)
+        self.assertIn(b"local", body)
+        self.assertIn(b'filename="DJI_0142.MP4"', body)
+        self.assertIn(b"v" * 1024, body)
+        self.assertGreaterEqual(len(video.read_sizes), 3)
+        self.assertTrue(all(0 < size <= 1024 * 1024 for size in video.read_sizes))

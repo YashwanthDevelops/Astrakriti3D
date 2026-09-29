@@ -16,17 +16,18 @@ python scripts/run_companion.py
 ```
 
 For a production WebODM deployment, build and run the non-root companion
-container with the opt-in `WebODM/docker-compose.astrakriti.yml` overlay. The
-overlay keeps the companion on the private Compose
+container with the opt-in overlay in
+`Reconstruction layer/docker-compose.astrakriti.yml`.
+The overlay keeps the companion on the private Compose
 network, persists preparation records in a named volume, and passes the bearer
 token only to the WebODM server and companion containers. It does not publish a
 host port.
 
 In PowerShell, create a fresh random token in the current shell, change into
-the vendored WebODM directory, and start the overlay:
+`Reconstruction layer`, and start the overlay:
 
 ```powershell
-Set-Location WebODM
+Set-Location "Reconstruction layer"
 $env:ASTRAKRITI_COMPANION_TOKEN = [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
 docker compose -f docker-compose.yml -f docker-compose.build.yml -f docker-compose.astrakriti.yml up -d --build astrakriti-companion webapp
 ```

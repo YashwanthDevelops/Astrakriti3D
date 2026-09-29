@@ -1,8 +1,9 @@
 # Astrakriti3D + WebODM Implementation Phases
 
 This document preserves the original phased plan, written when WebODM lived
-in a sibling checkout. The customized source now ships under `WebODM/` in this
-repository; see `INTEGRATION_BOUNDARY.md` for the current layout.
+in a sibling checkout. The customized source now ships under
+`Reconstruction layer/` in this repository; see
+`INTEGRATION_BOUNDARY.md` for the current layout.
 
 This plan converts the WebODM fork strategy into incremental, verifiable
 development phases. The existing Astrakriti3D project remains protected until

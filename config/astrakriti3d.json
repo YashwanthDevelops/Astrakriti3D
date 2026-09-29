@@ -8,6 +8,6 @@
   },
   "integration": {
     "adapter": "integrations.webodm_adapter.WebODMAdapter",
-    "upstream_checkout": "..\\WebODM"
+    "upstream_checkout": "..\\Reconstruction layer"
   }
 }

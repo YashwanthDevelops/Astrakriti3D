@@ -1,158 +1,128 @@
-# Astrakriti3D
+<p align="center">
+  <img src="web/assets/astrakriti3d-mark.svg" width="108" alt="Astrakriti3D mark">
+</p>
 
-Astrakriti3D is a reproducible drone-video 3D reconstruction project with a Python preparation pipeline integrated into the customized WebODM application. WebODM is the production UI and owns authentication, Projects, Tasks, reconstruction lifecycle, viewers, and output handling.
+<h1 align="center">Astrakriti3D</h1>
 
-## Project layout
+<p align="center">
+  <strong>Turn drone video into a traceable 3D reconstruction workflow.</strong><br>
+  Video preparation and optional telemetry georeferencing, integrated with WebODM’s native projects, tasks, viewers, and exports.
+</p>
 
-- `astrakriti3d/` — Python package for preparation, selection, reconstruction, recovery, storage, and telemetry workflows.
-- `WebODM/` — the customized WebODM application and its Astrakriti3D plugin, vendored from the upstream WebODM source.
-- `run_astrakriti.py` — command-line entry point.
-- `web/` — retired dashboard assets retained as historical references; they are not served by the compatibility API.
-- `tests/` — automated test suite.
-- `config/` and `docs/` — baseline configuration and project documentation.
+<p align="center">
+  <a href="docs/COMPANION_API.md">Companion API</a> ·
+  <a href="docs/PRODUCTION_BASELINE.md">R1 baseline</a> ·
+  <a href="docs/INTEGRATION_BOUNDARY.md">Architecture</a>
+</p>
 
-See [docs/INTEGRATION_BOUNDARY.md](docs/INTEGRATION_BOUNDARY.md) for the current
-application boundary and [docs/IMPLEMENTATION_PHASES_WEBODM.md](docs/IMPLEMENTATION_PHASES_WEBODM.md)
-for the historical staged integration plan.
+## What it does
 
-## Setup
+Astrakriti3D prepares drone video for photogrammetry and connects that preparation to a customized WebODM workspace. The authenticated companion validates video and optional DJI SRT telemetry, then returns a preparation bundle for a native WebODM task. WebODM remains the source of truth for sign-in, projects, tasks, processing, task status, viewers, and generated assets.
 
-Windows PowerShell:
+- **Repeatable video preparation:** inspect video timestamps and extract an ordered set of frames without modifying the source.
+- **Two clear coordinate modes:** process video alone for a local model, or provide valid SRT telemetry to prepare georeferenced inputs.
+- **Native reconstruction workflow:** use WebODM and NodeODM for task processing and their established viewers and exports.
+- **Traceable runs:** retain manifests, task state, logs, and output records so a result can be investigated later.
+- **Controlled experiments:** compare alternative frame selectors separately while keeping the validated R1 workflow frozen.
+
+## Workflow
+
+![Astrakriti3D workflow from drone capture to reviewable reconstruction outputs](docs/astrakriti3d-pipeline.svg)
+
+### A real project output
+
+![Orthophoto preview generated in the Astrakriti3D R1 WebODM workflow](web/assets/orthophoto-preview.jpg)
+
+*This is a real WebODM orthophoto preview from the project’s R1 work. The recorded example has visible coverage gaps, so it is useful evidence of the pipeline and its current quality limits—not a claim of a complete survey product.*
+
+## Verified R1 reference
+
+R1 is the frozen production reference for the project's DJI capture. Its documented record uses deterministic one-frame-per-second extraction and the installed WebODM defaults; see the [machine-readable baseline](config/r1_baseline.json).
+
+| Recorded R1 result | Value |
+| --- | ---: |
+| Selected source frames | 194 |
+| Registered images | 194 |
+| Reprojection error | 0.921 px |
+| Median / P95 GPS residual | 0.373 m / 0.941 m |
+| Dense point cloud | About 2.43 million points |
+| Available model outputs | Mesh and textured GLB/ZIP, plus orthophoto and report artifacts |
+
+These figures describe one dataset and its recorded acceptance run; they are not a cross-dataset benchmark or independent proof of absolute accuracy. GPS residuals measure agreement with supplied telemetry. Survey checkpoints or a trusted reference surface are needed to assess real-world accuracy.
+
+R2, R3, and adaptive frame selectors remain experimental. They are evaluated in separate evidence directories and do not silently replace R1.
+
+## Coordinate modes
+
+| Mode | Inputs | What the coordinates mean |
+| --- | --- | --- |
+| <code>local</code> | Video | A reconstruction-relative model. Absolute position, CRS, geographic orientation, and GPS residuals are unavailable. |
+| <code>georeferenced</code> | Video and valid DJI SRT telemetry | Frames are associated with telemetry and prepared with an EPSG:4326 <code>geo.txt</code>. This provides geographic alignment inputs, not independent accuracy validation. |
+
+## Quick start
+
+### Run the integrated WebODM workspace
+
+Requirements: Docker with Compose, and Git.
 
 ```powershell
+git clone --recurse-submodules https://github.com/YashwanthDevelops/Astrakriti3D.git
+Set-Location Astrakriti3D
+Set-Location "Reconstruction layer"
+
+$env:ASTRAKRITI_COMPANION_TOKEN = [Convert]::ToHexString(
+    [Security.Cryptography.RandomNumberGenerator]::GetBytes(32)
+)
+
+docker compose -f docker-compose.yml -f docker-compose.build.yml -f docker-compose.astrakriti.yml up -d --build astrakriti-companion webapp
+```
+
+Open the authenticated WebODM interface and visit <code>/astrakriti/overview/</code>. Keep the companion token in your secret store; do not commit it or expose it to browser code. See the [deployment and API guide](docs/COMPANION_API.md) for configuration, service health, and the full request contract.
+
+### Run local preparation tools
+
+Requirements: Python 3.12, FFmpeg, and ffprobe on <code>PATH</code>.
+
+```powershell
+Set-Location "C:/path/to/Astrakriti3D"
 py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
+./.venv/Scripts/Activate.ps1
 python -m pip install -r requirements.txt
 Copy-Item .env.example .env
+
+python run_astrakriti.py prepare --mode local --video "C:/path/to/capture.mp4" --output runs/local
 ```
 
-Set `WEBODM_BASE_URL`, `WEBODM_USERNAME`, and `WEBODM_PASSWORD` in `.env` when using WebODM. Never commit `.env`, videos, generated evidence, credentials, or runtime databases.
+For georeferenced preparation, use <code>--mode georeferenced</code>, provide <code>--srt "C:/path/to/capture.SRT"</code>, and write to a fresh output directory. To submit a reconstruction through the CLI, configure the WebODM connection in <code>.env</code> and run the non-submitting <code>preflight</code> command first. The exact R1 workflow and safety checks are documented in the [production baseline](docs/PRODUCTION_BASELINE.md).
 
-## Open ASTRAKRITI3D
+## Repository map
 
-Open the authenticated WebODM application at `/astrakriti/overview/`. The base URL comes from the deployment's `WEBODM_BASE_URL`; do not put WebODM credentials in a browser URL.
+| Path | Purpose |
+| --- | --- |
+| <code>astrakriti3d/</code> | Preparation, companion API, CLI, recovery, storage, and telemetry workflows. |
+| <code>Reconstruction layer/</code> | Customized WebODM application, Astrakriti3D integration, and Docker Compose deployment. |
+| <code>config/</code> | R1 baseline contract and application configuration. |
+| <code>docs/</code> | API contract, production baseline, integration boundary, and operating notes. |
+| <code>evidence/</code> | Preserved validation and experiment records. |
+| <code>scripts/</code> | Diagnostics, baseline validation, and offline selector experiments. |
+| <code>tests/</code> | Python unit and integration tests. |
 
-The former standalone UI is retired. For compatibility, the local Flask service may still expose its read-only `/api/summary`, `/api/health`, `/api/artifacts`, and `/api/dashboard/media/...` endpoints. Its `/` route redirects to the WebODM shell when a valid `WEBODM_BASE_URL` is configured, returns HTTP 410 otherwise, and no longer serves the legacy HTML/JavaScript assets. It does not run reconstruction processing.
+## Documentation
 
-To run only those retained read-only API endpoints from the project root:
+- [Preparation companion API and deployment](docs/COMPANION_API.md)
+- [Frozen R1 workflow and acceptance references](docs/PRODUCTION_BASELINE.md)
+- [Production integration boundary](docs/INTEGRATION_BOUNDARY.md)
+- [Implementation history](docs/IMPLEMENTATION_PHASES_WEBODM.md)
+- [Customized WebODM source and vendoring notes](Reconstruction%20layer/ASTRAKRITI3D_SOURCE.md)
 
-```powershell
-python run_web.py
-```
+## Known limits
 
-The WebODM URL and native login remain authoritative; the local service is not a replacement dashboard or authentication boundary.
+- Video-only <code>local</code> runs have arbitrary reconstruction orientation and scale; do not treat them as geographic measurements.
+- GPS and camera residuals do not replace independent checkpoints or a surveyed reference.
+- Results depend on image overlap, motion, lighting, texture, and available compute. The recorded R1 preview shows coverage gaps.
+- Alternative selectors and aggressive processing settings are experiments, not promoted production defaults.
+- Keep credentials, source video, generated evidence, and runtime databases out of Git. <code>.env</code> is local configuration and must remain private.
 
-The customized WebODM source is included in `WebODM/`. Its upstream source
-commit and vendoring notes are recorded in
-[`WebODM/ASTRAKRITI3D_SOURCE.md`](WebODM/ASTRAKRITI3D_SOURCE.md). The WebODM
-source dependencies are listed in the root `.gitmodules`; clone with
-`--recurse-submodules` to fetch them.
+## Attribution
 
-## Test
-
-```powershell
-python -m pytest
-```
-
-## Reconstruction workflow
-
-R1 is the official production baseline. It is frozen at 194 DJI frames extracted at a one-second interval with deterministic FFmpeg seek mode, complete telemetry/geo provenance, and installed WebODM defaults. R2, R3, and adaptive selectors are experimental and must be compared against R1 without changing R1 or its evidence.
-
-R1 is the official production baseline. It is frozen at 194 DJI frames extracted at a one-second interval with deterministic FFmpeg seek mode, complete telemetry/geo provenance, and the installed WebODM defaults. See [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md) and [config/r1_baseline.json](config/r1_baseline.json). R2, R3, and adaptive selectors are experimental and must be compared against R1 without changing R1 or its evidence.
-
-Preparation has two explicit provenance modes. Local mode requires only video and creates unreferenced input; georeferenced mode requires video plus valid DJI SRT telemetry and creates `geo.txt`. If `--mode` is omitted, local mode is selected. SRT is ignored in local mode.
-
-### Video-only local reconstruction
-
-SRT/GPS is optional. Video-only input uses `local` reconstruction mode and still produces the normal WebODM outputs: point cloud, mesh, textured model, orthophoto/report artifacts, and task logs. Without telemetry, absolute geographic position, CRS, GPS residuals, and geographic orientation are unavailable. The local model's orientation and scale are reconstruction-relative and must not be interpreted as geographic truth.
-
-The CLI does not currently provide a single `run` subcommand. Use the supported commands sequentially:
-
-```powershell
-python run_astrakriti.py preflight --mode local --video "C:\path\to\video.mp4" --output "runs\local\preflight"
-python run_astrakriti.py prepare --mode local --video "C:\path\to\video.mp4" --output "runs\local"
-python run_astrakriti.py reconstruct --mode local --video "C:\path\to\video.mp4" --images "runs\local\frames" --output "runs\local\webodm"
-```
-
-The completed example in `runs/images-r1-local-20260916` is classified **PASS WITH WARNINGS**: its downloaded artifacts are valid and include point cloud, mesh, textures, orthophoto, and WebODM reports, but the first three frames were not registered and the orthophoto shows visible gaps. This result is not geographic evidence and does not change frozen R1.
-
-```powershell
-python run_astrakriti.py prepare --mode local --video inputs\DJI_0142.MP4 --output runs\local
-python run_astrakriti.py prepare --mode georeferenced --video inputs\DJI_0142.MP4 --srt inputs\DJI_0142.SRT --output runs\georeferenced
-```
-
-Run the read-only production gate before preparation or WebODM submission:
-
-```powershell
-python run_astrakriti.py preflight --mode local --video inputs\DJI_0142.MP4 --output runs\preflight-local
-python run_astrakriti.py preflight --mode georeferenced --video inputs\DJI_0142.MP4 --srt inputs\DJI_0142.SRT --output runs\preflight-georeferenced
-```
-
-Preflight writes `preflight.json` and `preflight.md`, checks the frozen R1 baseline, media/resources, telemetry policy, and WebODM/NodeODM health, and never submits a task. Exit code 0 is reserved for PASS.
-
-Run one reconstruction in a new evidence directory after preflight:
-
-```powershell
-python run_astrakriti.py reconstruct --mode local --video inputs\DJI_0142.MP4 --images runs\local\frames --output evidence\reconstructions
-python run_astrakriti.py reconstruct --mode georeferenced --video inputs\DJI_0142.MP4 --srt inputs\DJI_0142.SRT --images runs\georeferenced\images --geo-txt runs\georeferenced\geo.txt --output evidence\reconstructions
-```
-
-Each invocation creates a unique `run-*` directory containing `run_manifest.json`, `task_status.json`, API/processing logs, downloaded artifacts, and failure reports when applicable. Failed, cancelled, and partial runs are never reused or deleted.
-
-This milestone provides a Python API runner for WebODM. It does not implement video/SRT processing or the frontend.
-
-Phase 2 video preparation uses ffprobe frame presentation timestamps and selects the first decoded frame at or after each one-second boundary. This is a reproducible starting rule, not a universal frame-count or coverage guarantee. Rotation is recorded as metadata and is not silently applied.
-
-PowerShell setup:
-
-```powershell
-py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-Copy-Item .env.example .env
-```
-
-Set `WEBODM_BASE_URL`, `WEBODM_USERNAME`, and `WEBODM_PASSWORD` in the environment (or load them with your preferred local `.env` tool). Never commit `.env`. Optional settings are `WEBODM_PROJECT_NAME`, `WEBODM_REQUEST_TIMEOUT_SECONDS`, and `WEBODM_POLL_INTERVAL_SECONDS`.
-
-Run diagnostics and tests:
-
-```powershell
-python scripts/doctor.py --output evidence/phase0/doctor.json
-python -m pytest
-```
-
-Prepare a real project-local video:
-
-```powershell
-python run_astrakriti.py prepare --video input.mp4 --output prepared/
-```
-
-The command requires both `ffprobe` and `ffmpeg` on `PATH`. It writes `ffprobe.json`, `inspection.json`, `manifest.json`, `preparation_report.json`, and extracted frames under the output directory. The original video is never modified.
-
-Run the API smoke command with at least two real project-local images:
-
-```powershell
-python scripts/smoke_webodm.py --images inputs\fixture --output runs\smoke
-```
-
-Add `--options options.json` for a JSON list of WebODM `{name, value}` pairs, or `--cancel-after 30` to exercise cancellation. Exit codes are 0 success, 2 remote/connection failure, 3 validation/configuration failure, 4 CLI validation failure, and 5 cancellation. A clean failure is expected when no real images, credentials, or reachable WebODM are configured.
-
-## Offline Phase 6 experiment
-
-Compare the existing 194-, 192- and 185-frame lists without starting WebODM. The runner reads local images only and writes to a new output directory.
-
-```powershell
-python scripts/run_phase6_offline.py --r1-images evidence/phase2/real-run/frames --r2-images evidence/phase6/diagnosis-followup/R2-conservative/frames --r2-exact-images evidence/phase6/r2-selection-rerun2/frames --geo-txt evidence/phase4/real-run/geo.txt --output evidence/phase6/offline-run-20260915 --threads 1
-```
-
-Use a new output directory on later runs. Add `--min-memory-bytes` to enforce a declared memory floor. This command never submits, uploads, overwrites or deletes WebODM evidence.
-
-## Offline Phase 7 validation
-
-Validate the preserved baseline inventory, telemetry/camera consistency and coverage proxies without starting WebODM:
-
-```powershell
-python scripts/run_phase7_offline.py --inventory evidence/phase5/baseline/baseline_inventory.json --association evidence/phase3/real-run/association_manifest.json --shots evidence/phase4/webodm-real-run/artifacts/shots.geojson --output evidence/phase7/offline-baseline-20260915
-```
-
-This reports artifact integrity and internal geolocation consistency. It intentionally leaves accuracy and surface completeness unverified until independent survey/checkpoint or reference-surface evidence is available.
+<code>Reconstruction layer/</code> contains customized, vendored WebODM source. Preserve its upstream license, trademark, and attribution files. Clone with <code>--recurse-submodules</code> to restore the WebODM locale and NodeODM dependencies. See the [source provenance notes](Reconstruction%20layer/ASTRAKRITI3D_SOURCE.md) and the [WebODM project](https://github.com/OpenDroneMap/WebODM).

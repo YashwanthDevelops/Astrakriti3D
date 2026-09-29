@@ -1,8 +1,9 @@
 # Astrakriti3D integration boundary
 
 The Astrakriti3D companion and the customized WebODM application are shipped
-in one repository. The WebODM source lives in `WebODM/` and is based on the
-upstream revision recorded in `WebODM/ASTRAKRITI3D_SOURCE.md`. WebODM remains
+in one repository. The WebODM source lives in
+`Reconstruction layer/` and is based on the upstream revision recorded in
+`Reconstruction layer/ASTRAKRITI3D_SOURCE.md`. WebODM remains
 the production owner of authentication, Project/Task identity, permissions,
 reconstruction lifecycle, status, cancellation, asset retrieval, and health
 checks.

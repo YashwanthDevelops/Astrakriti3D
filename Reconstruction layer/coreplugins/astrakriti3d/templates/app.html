@@ -5,7 +5,7 @@
     {{ block.super }}
     <script>document.documentElement.classList.add("astrakriti-route");</script>
     <meta name="csrf-token" content="{{ csrf_token }}">
-    <link href="/plugins/astrakriti3d/astrakriti.css" rel="stylesheet" type="text/css">
+    <link href="/plugins/astrakriti3d/astrakriti.css?v=brand-lockup-20260924" rel="stylesheet" type="text/css">
 {% endblock %}
 
 {% block headers-before-bundle %}
@@ -15,15 +15,10 @@
 {% block content %}
 <div id="astrakriti-shell" class="astrakriti-shell" data-page="{{ page }}" data-task-id="{{ task_id }}" data-dsm-available="{{ dsm_available|yesno:'true,false' }}">
     <aside class="astrakriti-rail" aria-label="Astrakriti navigation">
-        <a class="astrakriti-brand" href="/astrakriti/overview/">
-            <svg class="astrakriti-brand-mark" viewBox="0 0 100 48" aria-hidden="true" focusable="false">
-                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 42 39 3 97 42H3Z" />
-                    <path d="m17 42 9-14 13 4 11-20 12 12 11-1 12 19M26 28l3-15 12-10m0 0 1 19 9-7m0 0 13 2 5 10m0 0 12-1 6 6M39 32l1-19m0 0 9 7-9 12m9-12-9 12 13 10m-13-10-13-4-10 14m23-12 12-13m-12 13 18 0m-18 0 18 0 8-11m-8 11 20 0m-12-1 5 15" />
-                    <path d="M3 42h94" />
-                </g>
-            </svg>
-            <span>ASTRAKRITI3D</span>
+        <a class="astrakriti-brand" href="/astrakriti/overview/" aria-label="Astrakriti3D — drone video to 3D reconstruction">
+            <img class="astrakriti-brand-mark" src="/plugins/astrakriti3d/astrakriti3d-mark.svg" alt="" aria-hidden="true">
+            <span class="astrakriti-brand-name">ASTRAKRITI<span class="astrakriti-brand-suffix">3D</span></span>
+            <span class="astrakriti-brand-caption">DRONE VIDEO → 3D</span>
         </a>
         <nav class="astrakriti-nav" aria-label="Global navigation">
             <a class="{% if page == 'overview' %}is-active{% endif %}" href="/astrakriti/overview/">Overview</a>

@@ -7,8 +7,91 @@ than a fabricated preparation result.
 
 import os
 from pathlib import Path
+import uuid
 
 import requests
+
+
+class _StreamingMultipartBody:
+    """Encode multipart fields while reading file parts in bounded chunks."""
+
+    _CRLF = b"\r\n"
+    _CHUNK_SIZE = 1024 * 1024
+
+    def __init__(self, fields, files):
+        self.boundary = "----Astrakriti3D{}".format(uuid.uuid4().hex)
+        self.parts = []
+        self.closing = "--{}--\r\n".format(self.boundary).encode("ascii")
+        self.consumed = False
+
+        for name, value in fields.items():
+            header = self._part_header(name)
+            payload = str(value).encode("utf-8")
+            self.parts.append((header, payload, len(payload)))
+
+        for name, (filename, fileobj, content_type) in files.items():
+            safe_filename = os.path.basename(str(filename).replace("\\", "/")) or "upload"
+            header = self._part_header(
+                name,
+                filename=safe_filename,
+                content_type=content_type or "application/octet-stream",
+            )
+            position = fileobj.tell()
+            fileobj.seek(0, os.SEEK_END)
+            size = fileobj.tell() - position
+            fileobj.seek(position)
+            self.parts.append((header, fileobj, size))
+
+        self.length = len(self.closing) + sum(
+            len(header) + size + len(self._CRLF)
+            for header, _payload, size in self.parts
+        )
+
+    @staticmethod
+    def _quoted_parameter(value):
+        value = str(value).replace("\r", "").replace("\n", "")
+        return '"{}"'.format(value.replace("\\", "\\\\").replace('"', '\\"'))
+
+    def _part_header(self, name, filename=None, content_type=None):
+        disposition = "Content-Disposition: form-data; name={}".format(
+            self._quoted_parameter(name)
+        )
+        if filename is not None:
+            disposition += "; filename={}".format(self._quoted_parameter(filename))
+        lines = ["--{}".format(self.boundary), disposition]
+        if content_type:
+            safe_content_type = str(content_type).replace("\r", "").replace("\n", "")
+            lines.append("Content-Type: {}".format(safe_content_type))
+        return ("\r\n".join(lines) + "\r\n\r\n").encode("utf-8")
+
+    @property
+    def content_type(self):
+        return "multipart/form-data; boundary={}".format(self.boundary)
+
+    def __len__(self):
+        return self.length
+
+    def __iter__(self):
+        if self.consumed:
+            raise ValueError("multipart body streams can only be consumed once")
+        self.consumed = True
+        for header, payload, size in self.parts:
+            yield header
+            if isinstance(payload, bytes):
+                if payload:
+                    yield payload
+            else:
+                remaining = size
+                while remaining:
+                    chunk = payload.read(min(self._CHUNK_SIZE, remaining))
+                    if not chunk:
+                        raise IOError("multipart source changed during upload")
+                    if len(chunk) > remaining:
+                        raise IOError("multipart source changed during upload")
+                    remaining -= len(chunk)
+                    yield chunk
+            yield self._CRLF
+        yield self.closing
 
 
 class CompanionNotConfigured(RuntimeError):
@@ -88,22 +171,29 @@ class AstrakritiCompanionClient:
     def start_preparation(self, job_id, mode, video, srt=None):
         files = {
             "video": (
-                getattr(video, "name", "source-video"),
+                os.path.basename(str(getattr(video, "name", "source-video")).replace("\\", "/")),
                 video,
                 getattr(video, "content_type", "application/octet-stream"),
             )
         }
         if srt is not None:
             files["srt"] = (
-                getattr(srt, "name", "telemetry.srt"),
+                os.path.basename(str(getattr(srt, "name", "telemetry.srt")).replace("\\", "/")),
                 srt,
                 getattr(srt, "content_type", "text/plain"),
             )
+        body = _StreamingMultipartBody(
+            {"job_id": str(job_id), "mode": mode},
+            files,
+        )
         return self._request(
             "POST",
             "/v1/preparations",
-            data={"job_id": str(job_id), "mode": mode},
-            files=files,
+            data=body,
+            headers={
+                "Content-Type": body.content_type,
+                "Content-Length": str(len(body)),
+            },
         ).json()
 
     def preparation_status(self, job_id):

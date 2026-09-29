@@ -59,31 +59,44 @@ html.astrakriti-route .astrakriti-shell {
 }
 
 .astrakriti-brand {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 3px;
+    display: grid;
+    justify-items: center;
+    gap: 7px;
+    width: 100%;
     color: var(--astra-ink);
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: .06em;
-    line-height: 1.1;
     text-decoration: none;
+    text-align: center;
 }
 
 .astrakriti-brand-mark {
     display: block;
-    width: 100px;
-    height: 48px;
-    color: var(--astra-active);
-    stroke-width: 1.1;
+    width: 50px;
+    height: 50px;
     flex: none;
+}
+
+.astrakriti-brand-name {
+    color: var(--astra-ink);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .105em;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.astrakriti-brand-suffix { color: var(--astra-active); }
+
+.astrakriti-brand-caption {
+    color: var(--astra-muted);
+    font: 8px/1.2 "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: .065em;
+    white-space: nowrap;
 }
 
 .astrakriti-nav {
     display: grid;
     gap: 2px;
-    margin-top: 42px;
+    margin-top: 28px;
 }
 
 .astrakriti-nav a,

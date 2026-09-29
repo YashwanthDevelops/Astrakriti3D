@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="500" viewBox="0 0 1280 500" role="img" aria-labelledby="title desc">
+  <title id="title">Astrakriti3D drone reconstruction workflow</title>
+  <desc id="desc">Drone video and optional DJI SRT telemetry are prepared as a validated image bundle, processed as a native WebODM task, and reviewed as point cloud, textured model, orthophoto, reports, and logs. Local mode has no geographic claims. Georeferenced mode requires valid telemetry.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111d2d"/>
+      <stop offset="1" stop-color="#0a1220"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#42d6c4"/>
+      <stop offset="1" stop-color="#64a8ff"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="500" rx="28" fill="url(#background)"/>
+  <text x="64" y="60" fill="#58d8c7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="700" letter-spacing="2.2">ASTRAKRITI3D · TRACEABLE PHOTOGRAMMETRY</text>
+  <text x="64" y="110" fill="#f5f8fc" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="34" font-weight="700">From flight video to reviewable 3D evidence</text>
+
+  <g font-family="Inter,Segoe UI,Arial,sans-serif">
+    <rect x="64" y="150" width="256" height="210" rx="18" fill="#172438" stroke="#2e4057"/>
+    <circle cx="94" cy="181" r="15" fill="#223c51"/><text x="94" y="186" fill="#63d9c8" font-size="13" font-weight="700" text-anchor="middle">01</text>
+    <text x="120" y="186" fill="#8ba0ba" font-size="11" font-weight="700" letter-spacing="1.4">INPUT</text>
+    <text x="88" y="232" fill="#f4f7fb" font-size="21" font-weight="700">Drone capture</text>
+    <text x="88" y="266" fill="#c1ccda" font-size="14">Video plus optional DJI SRT</text>
+    <text x="88" y="290" fill="#c1ccda" font-size="14">Original media stays untouched.</text>
+
+    <rect x="354" y="150" width="256" height="210" rx="18" fill="#172438" stroke="#2e4057"/>
+    <circle cx="384" cy="181" r="15" fill="#223c51"/><text x="384" y="186" fill="#63d9c8" font-size="13" font-weight="700" text-anchor="middle">02</text>
+    <text x="410" y="186" fill="#8ba0ba" font-size="11" font-weight="700" letter-spacing="1.4">PREPARE</text>
+    <text x="378" y="232" fill="#f4f7fb" font-size="20" font-weight="700">Validated bundle</text>
+    <text x="378" y="266" fill="#c1ccda" font-size="14">Timestamped frame selection</text>
+    <text x="378" y="290" fill="#c1ccda" font-size="14">Manifest and checked telemetry</text>
+    <text x="378" y="314" fill="#c1ccda" font-size="14">geo.txt only in geo mode</text>
+
+    <rect x="644" y="150" width="256" height="210" rx="18" fill="#172438" stroke="#2e4057"/>
+    <circle cx="674" cy="181" r="15" fill="#223c51"/><text x="674" y="186" fill="#63d9c8" font-size="13" font-weight="700" text-anchor="middle">03</text>
+    <text x="700" y="186" fill="#8ba0ba" font-size="11" font-weight="700" letter-spacing="1.4">PROCESS</text>
+    <text x="668" y="232" fill="#f4f7fb" font-size="20" font-weight="700">Native WebODM task</text>
+    <text x="668" y="266" fill="#c1ccda" font-size="14">WebODM owns login, Projects,</text>
+    <text x="668" y="290" fill="#c1ccda" font-size="14">Tasks, queue, and reconstruction.</text>
+
+    <rect x="934" y="150" width="282" height="210" rx="18" fill="#172438" stroke="#2e4057"/>
+    <circle cx="964" cy="181" r="15" fill="#223c51"/><text x="964" y="186" fill="#63d9c8" font-size="13" font-weight="700" text-anchor="middle">04</text>
+    <text x="990" y="186" fill="#8ba0ba" font-size="11" font-weight="700" letter-spacing="1.4">REVIEW</text>
+    <text x="958" y="232" fill="#f4f7fb" font-size="20" font-weight="700">Outputs with provenance</text>
+    <text x="958" y="266" fill="#c1ccda" font-size="14">Point cloud · textured model</text>
+    <text x="958" y="290" fill="#c1ccda" font-size="14">Orthophoto · reports · task logs</text>
+
+    <g stroke="url(#accent)" stroke-width="2.5" fill="none">
+      <path d="M324 255h22"/><path d="M340 248l7 7-7 7"/>
+      <path d="M614 255h22"/><path d="M630 248l7 7-7 7"/>
+      <path d="M904 255h22"/><path d="M920 248l7 7-7 7"/>
+    </g>
+  </g>
+
+  <path d="M64 390h1152" stroke="#2b3a4f"/>
+  <circle cx="76" cy="423" r="5" fill="#63d9c8"/>
+  <text x="92" y="428" fill="#d4deea" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13"><tspan font-weight="700">LOCAL</tspan><tspan fill="#99a9bc"> · relative position, orientation, and scale</tspan></text>
+  <circle cx="548" cy="423" r="5" fill="#64a8ff"/>
+  <text x="564" y="428" fill="#d4deea" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13"><tspan font-weight="700">GEOREFERENCED</tspan><tspan fill="#99a9bc"> · valid telemetry required</tspan></text>
+  <text x="64" y="466" fill="#8292a7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12">Geographic alignment is not a substitute for independent accuracy checks.</text>
+</svg>
