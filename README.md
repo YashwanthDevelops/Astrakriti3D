@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="web/assets/astrakriti3d-mark.svg" width="76" alt="Astrakriti3D mark">
+  <img src="web/assets/sih-2026-logo.png" width="270" alt="Smart India Hackathon 2026">
 </p>
 
 <h1 align="center">Astrakriti3D</h1>
@@ -46,18 +46,18 @@ The workflow keeps capture preparation, processing status, inspection, and downl
 
 These capabilities describe the product direction and current implementation status:
 
-- **Capture — 🎥 Single-pass drone video:** supported; prepare a video directly without first assembling a separate still-image set.
-- **Capture — 📡 GNSS/SRT integration:** supported for DJI SRT telemetry, which provides geographic alignment inputs. It does not independently prove positional accuracy.
-- **Reconstruct — 🧠 AI/intelligent frame selection:** experimental feature- and coverage-aware selectors are available; deterministic one-frame-per-second sampling remains the default. The experimental selectors are not represented as AI models.
-- **Reconstruct — 🔄 End-to-end automation:** partial; the CLI can run preflight, preparation, and reconstruction submission. Generated products still need review and validation.
-- **Reconstruct — ⚡ <10 min reconstruction target:** engineering target only; benchmark validation is pending.
-- **Understand — 🏚️ Crack/anomaly detection:** planned; the current pipeline does not automatically detect or classify structural defects.
-- **Understand — 🚨 Early structural diagnosis:** planned; it depends on validated detection and appropriate engineering assessment.
-- **Understand — 🌙 Low-light/night capability:** not yet validated; no night-specific performance claim is made.
-- **Trust — 📍 Sub-meter geospatial accuracy:** not established; independent survey checkpoints or a trusted reference are needed to validate it.
-- **Trust — 🗺️ Coverage / missing-region detection:** experimental coverage-aware frame selection exists, but the product does not yet provide a validated map of trustworthy and missing regions.
-- **Interact — ✨ Gaussian Splat output:** planned; Gaussian Splats are not among the outputs documented for the current pipeline.
-- **Interact — 📏 Metric measurement:** available for task-associated distance, area, and volume records. Volume requires a valid DSM, and geographic measurements depend on valid georeferencing.
+- **Video input:** supported; prepare a single video without first assembling a separate still-image set.
+- **Telemetry alignment:** supported for DJI SRT telemetry as a source of geographic alignment inputs. It does not independently prove positional accuracy.
+- **Frame selection:** experimental feature- and coverage-aware selectors are available; deterministic one-frame-per-second sampling remains the default. The experimental selectors are not represented as AI models.
+- **Workflow automation:** partial; the CLI can run preflight, preparation, and reconstruction submission. Generated products still need review and validation.
+- **Reconstruction speed:** engineering target only; benchmark validation is pending.
+- **Crack and anomaly detection:** planned; the current pipeline does not automatically detect or classify structural defects.
+- **Structural diagnosis:** planned; it depends on validated detection and appropriate engineering assessment.
+- **Low-light and night use:** not yet validated; no night-specific performance claim is made.
+- **Geospatial accuracy:** sub-meter accuracy is not established; independent survey checkpoints or a trusted reference are needed to validate it.
+- **Coverage review:** experimental coverage-aware frame selection exists, but the product does not yet provide a validated map of trustworthy and missing regions.
+- **Gaussian Splat output:** planned; it is not among the outputs documented for the current pipeline.
+- **Measurements:** task-associated distance, area, and volume records are available. Volume requires a valid DSM, and geographic measurements depend on valid georeferencing.
 
 ## Capabilities
 
@@ -75,7 +75,9 @@ These capabilities describe the product direction and current implementation sta
 
 ## How it works
 
-![Eight-stage Astrakriti3D process from drone video through preparation, reconstruction, and export](docs/assets/readme/pipeline.svg)
+![Illustrative drone-video reconstruction workflow from capture frames to a 3D terrain model](docs/assets/readme/how-it-works.jpg)
+
+*Illustrative workflow artwork; it is not a measured reconstruction result.*
 
 **Drone video → frame extraction → optional telemetry alignment → feature matching → camera estimation → dense reconstruction → meshing and texturing → inspection and export.**
 
@@ -83,9 +85,9 @@ Frame extraction currently defaults to deterministic one-frame-per-second sampli
 
 ## Outputs
 
-![Illustrative point cloud, textured mesh, and orthographic map views; these drawings are not measured reconstruction results](docs/assets/readme/outputs.svg)
+![Illustrative point cloud, textured terrain mesh, and top-down map view](docs/assets/readme/outputs-overview.jpg)
 
-*Illustrative artwork only. Actual products depend on the source video and task settings.*
+*Illustrative output artwork; actual task products depend on the source video and processing settings.*
 
 - **Point cloud:** explore reconstructed scene detail in the 3D viewer; point-cloud files are available when generated by the task.
 - **Mesh and textured model:** inspect a surface model; textured GLB or ZIP artifacts are available where produced by the task.
@@ -142,13 +144,13 @@ docker compose `
   -f docker-compose.astrakriti.yml up -d --build astrakriti-companion webapp
 ~~~
 
-Open the WebODM interface and visit <code>/astrakriti/overview/</code>. Keep the companion token private. The [companion API and deployment guide](docs/COMPANION_API.md) covers service configuration and the preparation contract.
+Open the integrated workspace at <code>/astrakriti/overview/</code>. Keep the companion token private. The [companion API and deployment guide](docs/COMPANION_API.md) covers service configuration and the preparation contract.
 
-The CLI also has a <code>run</code> command that performs preflight, preparation, and reconstruction. Configure WebODM credentials in <code>.env</code> first; the command submits a task only after preflight passes:
+The CLI also has a <code>run</code> command that performs preflight, preparation, and reconstruction submission. Configure the backend connection settings in <code>.env</code> first; the command submits a task only after preflight passes. See the [production workflow reference](docs/PRODUCTION_BASELINE.md) for the required settings:
 
 ~~~powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-# Set WEBODM_BASE_URL, WEBODM_USERNAME, and WEBODM_PASSWORD in .env.
+# Set the backend connection settings in .env.
 python run_astrakriti.py run `
   --mode local `
   --video "C:/path/to/capture.mp4" `
@@ -163,20 +165,22 @@ See the [production workflow reference](docs/PRODUCTION_BASELINE.md) for the sep
 flowchart LR
     input["Drone video<br/>Optional DJI SRT"] --> prep["Astrakriti3D preparation<br/>CLI or companion API"]
     prep --> bundle["Frames + manifest<br/>Optional geo.txt"]
-    bundle --> webodm["WebODM<br/>Authentication, projects, tasks"]
-    webodm --> nodeodm["NodeODM processing"]
-    nodeodm --> webodm
-    webodm --> review["3D and map viewers<br/>Measurements and task downloads"]
+    bundle --> engine["Reconstruction layer<br/>Projects, processing, task status"]
+    engine --> review["Astrakriti3D workspace<br/>3D and map review, measurements, downloads"]
 ~~~
 
-The companion prepares video and telemetry inputs. WebODM remains responsible for sign-in, projects, tasks, processing status, viewers, and task files.
+The companion prepares video and telemetry inputs. The reconstruction layer manages projects, processing, task status, viewers, and generated files, which are brought together in the Astrakriti3D workspace.
 
-- <code>astrakriti3d/</code> — video and telemetry preparation, CLI orchestration, companion API, and recovery.
-- <code>Reconstruction layer/</code> — integrated WebODM application, Astrakriti3D interface, and Compose deployment.
-- <code>config/</code> — processing contracts and configuration.
-- <code>docs/</code> — API, deployment, architecture, and operating references.
-- <code>scripts/</code> — diagnostics and offline validation tools.
-- <code>tests/</code> — Python tests for preparation and orchestration.
+| Location | Purpose |
+| --- | --- |
+| <code>run_astrakriti.py</code> | CLI entry point for preparation and integrated runs. |
+| <code>astrakriti3d/</code> | Video and telemetry preparation, orchestration, companion API, and recovery. |
+| <code>Reconstruction layer/</code> | Integrated reconstruction application, Astrakriti3D interface, and Compose deployment. |
+| <code>web/</code> | Static presentation landing page. |
+| <code>config/</code> | Processing contracts and configuration. |
+| <code>docs/</code> | API, deployment, architecture, and operating references. |
+| <code>scripts/</code> | Diagnostics and offline validation tools. |
+| <code>tests/</code> | Automated tests for preparation and orchestration. |
 
 ## Roadmap and credits
 
@@ -185,9 +189,9 @@ The companion prepares video and telemetry inputs. WebODM remains responsible fo
 - Evaluate experimental frame selectors against comparable coverage and reconstruction-quality evidence before considering them as defaults.
 - Connect the presentation website to the reconstruction backend.
 
-**Documentation:** [Companion API and deployment](docs/COMPANION_API.md) · [Production workflow](docs/PRODUCTION_BASELINE.md) · [Integration boundary](docs/INTEGRATION_BOUNDARY.md) · [WebODM integration phases](docs/IMPLEMENTATION_PHASES_WEBODM.md)
+**Documentation:** [Companion API and deployment](docs/COMPANION_API.md) · [Production workflow](docs/PRODUCTION_BASELINE.md) · [Integration boundary](docs/INTEGRATION_BOUNDARY.md)
 
-**Credits:** Astrakriti3D uses WebODM and NodeODM for its reconstruction stack. The customized WebODM source and upstream notices are described in the [source provenance notes](Reconstruction%20layer/ASTRAKRITI3D_SOURCE.md). See the [license notes](LICENSE_NOTES.md), [WebODM license](Reconstruction%20layer/LICENSE.md), and [security policy](Reconstruction%20layer/SECURITY.md).
+**Credits and third-party notices:** Processing components and upstream notices are documented in the [source provenance notes](Reconstruction%20layer/ASTRAKRITI3D_SOURCE.md). See the [license notes](LICENSE_NOTES.md), [component license](Reconstruction%20layer/LICENSE.md), and [security policy](Reconstruction%20layer/SECURITY.md).
 
 ## Known limits
 
