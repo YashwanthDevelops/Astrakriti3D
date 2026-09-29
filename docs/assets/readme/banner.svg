@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 390" role="img" aria-labelledby="title desc">
+  <title id="title">Drone capture becoming an explorable terrain model</title>
+  <desc id="desc">A quadcopter flies over a topographic landscape. Its path resolves into a mineral-teal wireframe terrain mesh.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#172122"/><stop offset="1" stop-color="#263637"/></linearGradient>
+    <linearGradient id="land" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8bbab1" stop-opacity=".9"/><stop offset="1" stop-color="#386e6d" stop-opacity=".42"/></linearGradient>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse" patternTransform="skewY(-23)"><path d="M36 0H0v36" fill="none" stroke="#a8d0c6" stroke-opacity=".23" stroke-width="1"/></pattern>
+  </defs>
+  <rect width="1440" height="390" rx="28" fill="url(#bg)"/>
+  <g fill="none" stroke="#e9e4d5" stroke-opacity=".12" stroke-width="1.2">
+    <path d="M-40 300C95 233 149 319 263 271s171-17 249-81 151-49 206-108"/>
+    <path d="M-40 325C89 262 150 344 271 295s172-17 255-82 157-50 218-112"/>
+    <path d="M-30 350c127-60 196 20 315-31s176-18 261-82 155-47 218-108"/>
+    <path d="M38 390c108-38 162 5 263-39s175-28 265-94 163-43 243-109"/>
+    <path d="M130 390c91-22 143-7 225-48s169-44 255-104 167-41 242-106"/>
+  </g>
+  <g transform="translate(300 98)" fill="none" stroke="#f3f0e7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-35 0-8 14m43-14L8 14M-35 30-8 16m43 14L8 16" stroke-width="5"/>
+    <path d="M-45-4h9m72 0h9M-45 34h9m72 0h9" stroke-width="2"/>
+    <circle cx="-49" cy="-4" r="12" stroke-width="3"/><circle cx="49" cy="-4" r="12" stroke-width="3"/>
+    <circle cx="-49" cy="34" r="12" stroke-width="3"/><circle cx="49" cy="34" r="12" stroke-width="3"/>
+    <rect x="-12" y="6" width="24" height="24" rx="7" fill="#4e8581" stroke-width="2"/>
+    <path d="M0 31v31" stroke="#b2ddd2" stroke-width="3" stroke-dasharray="3 8"/>
+    <circle cx="0" cy="71" r="4" fill="#e7bb76" stroke="none"/>
+  </g>
+  <g fill="#f3f0e7" opacity=".8"><circle cx="390" cy="207" r="2"/><circle cx="425" cy="218" r="2.5"/><circle cx="461" cy="207" r="2"/><circle cx="497" cy="225" r="2.5"/><circle cx="534" cy="212" r="2"/><circle cx="570" cy="231" r="2"/><circle cx="609" cy="220" r="2.5"/><circle cx="645" cy="237" r="2"/></g>
+  <path d="M359 179C474 176 552 235 670 217s206-83 354-65" fill="none" stroke="#d9b16d" stroke-opacity=".76" stroke-width="2" stroke-dasharray="4 12"/>
+  <g transform="translate(644 120)">
+    <path d="m0 133 111-64 105 17 113-72 112 37 120-49 120 65 0 111-120-24-121 46-113-19-111 51-105-41-111 30Z" fill="url(#land)" stroke="#a8d0c6" stroke-opacity=".74" stroke-width="1.5"/>
+    <path d="m0 133 111-64 105 17 113-72 112 37 120-49 120 65M0 133l111 54 105-101 113 91 112-126 120 93 120-17M0 133l111-1 105-46 113 99 112-156 120 90 120-17M0 133l111 54 105 27 113-91 112-64 120 100 120-17" fill="none" stroke="#d3e8df" stroke-opacity=".76" stroke-width="1.25"/>
+    <path d="M0 133v111l111-57V69l105 17v122l113-91V14l112 37v121l120-49V2l120 65v111" fill="url(#grid)" stroke="#9dc8be" stroke-opacity=".42" stroke-width="1"/>
+  </g>
+</svg>

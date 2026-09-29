@@ -1,128 +1,196 @@
 <p align="center">
-  <img src="web/assets/astrakriti3d-mark.svg" width="108" alt="Astrakriti3D mark">
+  <img src="web/assets/astrakriti3d-mark.svg" width="76" alt="Astrakriti3D mark">
 </p>
 
 <h1 align="center">Astrakriti3D</h1>
 
 <p align="center">
-  <strong>Turn drone video into a traceable 3D reconstruction workflow.</strong><br>
-  Video preparation and optional telemetry georeferencing, integrated with WebODM’s native projects, tasks, viewers, and exports.
+  <strong>From drone footage to explorable 3D.</strong><br>
+  A unified workflow for video preparation, telemetry alignment, reconstruction, inspection, and export.
 </p>
 
 <p align="center">
-  <a href="docs/COMPANION_API.md">Companion API</a> ·
-  <a href="docs/PRODUCTION_BASELINE.md">R1 baseline</a> ·
-  <a href="docs/INTEGRATION_BOUNDARY.md">Architecture</a>
+  <img src="docs/assets/readme/banner.svg" width="100%" alt="Drone capture transitioning into an explorable terrain reconstruction">
 </p>
 
-## What it does
+<p align="center">
+  <a href="https://astrakriti3d.vercel.app/">Visit the landing page</a>
+  <br>
+  <sub>Presentation website — backend integration coming later.</sub>
+</p>
 
-Astrakriti3D prepares drone video for photogrammetry and connects that preparation to a customized WebODM workspace. The authenticated companion validates video and optional DJI SRT telemetry, then returns a preparation bundle for a native WebODM task. WebODM remains the source of truth for sign-in, projects, tasks, processing, task status, viewers, and generated assets.
+<p align="center">
+  <a href="#overview">Overview</a> ·
+  <a href="#capabilities">Capabilities</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#outputs">Outputs</a> ·
+  <a href="#performance">Performance</a> ·
+  <a href="#quick-start">Getting started</a> ·
+  <a href="#architecture">Architecture</a> ·
+  <a href="#roadmap-and-credits">Roadmap and credits</a>
+</p>
 
-- **Repeatable video preparation:** inspect video timestamps and extract an ordered set of frames without modifying the source.
-- **Two clear coordinate modes:** process video alone for a local model, or provide valid SRT telemetry to prepare georeferenced inputs.
-- **Native reconstruction workflow:** use WebODM and NodeODM for task processing and their established viewers and exports.
-- **Traceable runs:** retain manifests, task state, logs, and output records so a result can be investigated later.
-- **Controlled experiments:** compare alternative frame selectors separately while keeping the validated R1 workflow frozen.
+## Overview
 
-## Workflow
+Astrakriti3D takes drone video through preparation and photogrammetric reconstruction into an integrated workspace for reviewing 3D and map outputs. Use video on its own for a local model, or add supported telemetry to prepare geographically aligned inputs.
 
-![Astrakriti3D workflow from drone capture to reviewable reconstruction outputs](docs/astrakriti3d-pipeline.svg)
+The workflow keeps capture preparation, processing status, inspection, and downloads connected. It is designed for aerial surveys, site documentation, and other projects where a flight video needs to become something a team can explore.
 
-### A real project output
+## Product direction
 
-![Orthophoto preview generated in the Astrakriti3D R1 WebODM workflow](web/assets/orthophoto-preview.jpg)
+**A 3D model is the starting point. Astrakriti3D aims to turn one drone video into a georeferenced, measurable, inspectable digital representation of a real site.**
 
-*This is a real WebODM orthophoto preview from the project’s R1 work. The recorded example has visible coverage gaps, so it is useful evidence of the pipeline and its current quality limits—not a claim of a complete survey product.*
+**Capture** (single video + optional DJI SRT) → **Reconstruct** (automated preparation and photogrammetry) → **Understand** (anomaly indicators) → **Trust** (geographic alignment and coverage context) → **Interact** (3D outputs and measurements).
 
-## Verified R1 reference
+These capabilities describe the product direction and current implementation status:
 
-R1 is the frozen production reference for the project's DJI capture. Its documented record uses deterministic one-frame-per-second extraction and the installed WebODM defaults; see the [machine-readable baseline](config/r1_baseline.json).
+- **Capture — 🎥 Single-pass drone video:** supported; prepare a video directly without first assembling a separate still-image set.
+- **Capture — 📡 GNSS/SRT integration:** supported for DJI SRT telemetry, which provides geographic alignment inputs. It does not independently prove positional accuracy.
+- **Reconstruct — 🧠 AI/intelligent frame selection:** experimental feature- and coverage-aware selectors are available; deterministic one-frame-per-second sampling remains the default. The experimental selectors are not represented as AI models.
+- **Reconstruct — 🔄 End-to-end automation:** partial; the CLI can run preflight, preparation, and reconstruction submission. Generated products still need review and validation.
+- **Reconstruct — ⚡ <10 min reconstruction target:** engineering target only; benchmark validation is pending.
+- **Understand — 🏚️ Crack/anomaly detection:** planned; the current pipeline does not automatically detect or classify structural defects.
+- **Understand — 🚨 Early structural diagnosis:** planned; it depends on validated detection and appropriate engineering assessment.
+- **Understand — 🌙 Low-light/night capability:** not yet validated; no night-specific performance claim is made.
+- **Trust — 📍 Sub-meter geospatial accuracy:** not established; independent survey checkpoints or a trusted reference are needed to validate it.
+- **Trust — 🗺️ Coverage / missing-region detection:** experimental coverage-aware frame selection exists, but the product does not yet provide a validated map of trustworthy and missing regions.
+- **Interact — ✨ Gaussian Splat output:** planned; Gaussian Splats are not among the outputs documented for the current pipeline.
+- **Interact — 📏 Metric measurement:** available for task-associated distance, area, and volume records. Volume requires a valid DSM, and geographic measurements depend on valid georeferencing.
 
-| Recorded R1 result | Value |
-| --- | ---: |
-| Selected source frames | 194 |
-| Registered images | 194 |
-| Reprojection error | 0.921 px |
-| Median / P95 GPS residual | 0.373 m / 0.941 m |
-| Dense point cloud | About 2.43 million points |
-| Available model outputs | Mesh and textured GLB/ZIP, plus orthophoto and report artifacts |
+## Capabilities
 
-These figures describe one dataset and its recorded acceptance run; they are not a cross-dataset benchmark or independent proof of absolute accuracy. GPS residuals measure agreement with supplied telemetry. Survey checkpoints or a trusted reference surface are needed to assess real-world accuracy.
+- **Prepare video for reconstruction:** inspect timestamps and extract ordered frames at a repeatable interval.
+- **Choose a coordinate mode:** work with video alone, or align frames with supported DJI SRT telemetry.
+- **Reconstruct and inspect:** review point clouds, textured models, and mapping products when those outputs are generated.
+- **Measure in context:** use task-associated distance, area, and volume measurement records; volume requires a valid DSM.
+- **Keep preparation traceable:** retain frame manifests and explicit input-mode information with prepared inputs.
+- **Export task products:** download the assets made available by a completed task.
 
-R2, R3, and adaptive frame selectors remain experimental. They are evaluated in separate evidence directories and do not silently replace R1.
+| Workflow | What changes |
+| --- | --- |
+| Video only | Uses local reconstruction coordinates with arbitrary position, orientation, and scale. |
+| Video + valid DJI SRT | Aligns frames with telemetry and provides geographic positioning inputs. Independent survey checks are still needed to establish real-world accuracy. |
 
-## Coordinate modes
+## How it works
 
-| Mode | Inputs | What the coordinates mean |
-| --- | --- | --- |
-| <code>local</code> | Video | A reconstruction-relative model. Absolute position, CRS, geographic orientation, and GPS residuals are unavailable. |
-| <code>georeferenced</code> | Video and valid DJI SRT telemetry | Frames are associated with telemetry and prepared with an EPSG:4326 <code>geo.txt</code>. This provides geographic alignment inputs, not independent accuracy validation. |
+![Eight-stage Astrakriti3D process from drone video through preparation, reconstruction, and export](docs/assets/readme/pipeline.svg)
+
+**Drone video → frame extraction → optional telemetry alignment → feature matching → camera estimation → dense reconstruction → meshing and texturing → inspection and export.**
+
+Frame extraction currently defaults to deterministic one-frame-per-second sampling. The <code>select-frames</code> and <code>adaptive-select</code> CLI paths are experimental and do not replace that default.
+
+## Outputs
+
+![Illustrative point cloud, textured mesh, and orthographic map views; these drawings are not measured reconstruction results](docs/assets/readme/outputs.svg)
+
+*Illustrative artwork only. Actual products depend on the source video and task settings.*
+
+- **Point cloud:** explore reconstructed scene detail in the 3D viewer; point-cloud files are available when generated by the task.
+- **Mesh and textured model:** inspect a surface model; textured GLB or ZIP artifacts are available where produced by the task.
+- **Orthophoto and elevation products:** review map imagery, with DSM/DTM products when enabled and generated.
+- **Reports and task files:** download the outputs and reports exposed by the completed task. Formats depend on the generated products.
+
+### Example orthophoto
+
+![Actual orthophoto output with visible coverage gaps](web/assets/orthophoto-preview.jpg)
+
+This is an actual project output preview. Coverage gaps are visible, and the image is not an independently validated survey product.
+
+## Performance
+
+> **Engineering target: reconstruct a 10-minute drone video in under 10 minutes. Benchmark validation pending.**
+
+This target is not a measured runtime claim. A useful comparison requires the same input, hardware, settings, timing boundary, and a defined quality measure; no such benchmark is published here yet.
 
 ## Quick start
 
-### Run the integrated WebODM workspace
+### Prepare a video locally
 
-Requirements: Docker with Compose, and Git.
+Requirements: Python 3.10 or later, FFmpeg, and <code>ffprobe</code> on <code>PATH</code>.
 
-```powershell
+~~~powershell
 git clone --recurse-submodules https://github.com/YashwanthDevelops/Astrakriti3D.git
 Set-Location Astrakriti3D
-Set-Location "Reconstruction layer"
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python run_astrakriti.py --help
 
+python run_astrakriti.py prepare `
+  --mode local `
+  --video "C:/path/to/capture.mp4" `
+  --output "C:/path/to/local-preparation"
+~~~
+
+For geographically aligned preparation, use <code>--mode georeferenced</code> and add <code>--srt "C:/path/to/capture.SRT"</code>. Use a fresh output directory for each preparation.
+
+### Run the integrated workspace
+
+Requirements: Docker with Compose and Git.
+
+~~~powershell
+Set-Location "Reconstruction layer"
 $env:ASTRAKRITI_COMPANION_TOKEN = [Convert]::ToHexString(
     [Security.Cryptography.RandomNumberGenerator]::GetBytes(32)
 )
 
-docker compose -f docker-compose.yml -f docker-compose.build.yml -f docker-compose.astrakriti.yml up -d --build astrakriti-companion webapp
-```
+docker compose `
+  -f docker-compose.yml `
+  -f docker-compose.build.yml `
+  -f docker-compose.astrakriti.yml up -d --build astrakriti-companion webapp
+~~~
 
-Open the authenticated WebODM interface and visit <code>/astrakriti/overview/</code>. Keep the companion token in your secret store; do not commit it or expose it to browser code. See the [deployment and API guide](docs/COMPANION_API.md) for configuration, service health, and the full request contract.
+Open the WebODM interface and visit <code>/astrakriti/overview/</code>. Keep the companion token private. The [companion API and deployment guide](docs/COMPANION_API.md) covers service configuration and the preparation contract.
 
-### Run local preparation tools
+The CLI also has a <code>run</code> command that performs preflight, preparation, and reconstruction. Configure WebODM credentials in <code>.env</code> first; the command submits a task only after preflight passes:
 
-Requirements: Python 3.12, FFmpeg, and ffprobe on <code>PATH</code>.
+~~~powershell
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+# Set WEBODM_BASE_URL, WEBODM_USERNAME, and WEBODM_PASSWORD in .env.
+python run_astrakriti.py run `
+  --mode local `
+  --video "C:/path/to/capture.mp4" `
+  --output "C:/path/to/local-run"
+~~~
 
-```powershell
-Set-Location "C:/path/to/Astrakriti3D"
-py -3.12 -m venv .venv
-./.venv/Scripts/Activate.ps1
-python -m pip install -r requirements.txt
-Copy-Item .env.example .env
+See the [production workflow reference](docs/PRODUCTION_BASELINE.md) for the separate preflight and reconstruction commands.
 
-python run_astrakriti.py prepare --mode local --video "C:/path/to/capture.mp4" --output runs/local
-```
+## Architecture
 
-For georeferenced preparation, use <code>--mode georeferenced</code>, provide <code>--srt "C:/path/to/capture.SRT"</code>, and write to a fresh output directory. To submit a reconstruction through the CLI, configure the WebODM connection in <code>.env</code> and run the non-submitting <code>preflight</code> command first. The exact R1 workflow and safety checks are documented in the [production baseline](docs/PRODUCTION_BASELINE.md).
+~~~mermaid
+flowchart LR
+    input["Drone video<br/>Optional DJI SRT"] --> prep["Astrakriti3D preparation<br/>CLI or companion API"]
+    prep --> bundle["Frames + manifest<br/>Optional geo.txt"]
+    bundle --> webodm["WebODM<br/>Authentication, projects, tasks"]
+    webodm --> nodeodm["NodeODM processing"]
+    nodeodm --> webodm
+    webodm --> review["3D and map viewers<br/>Measurements and task downloads"]
+~~~
 
-## Repository map
+The companion prepares video and telemetry inputs. WebODM remains responsible for sign-in, projects, tasks, processing status, viewers, and task files.
 
-| Path | Purpose |
-| --- | --- |
-| <code>astrakriti3d/</code> | Preparation, companion API, CLI, recovery, storage, and telemetry workflows. |
-| <code>Reconstruction layer/</code> | Customized WebODM application, Astrakriti3D integration, and Docker Compose deployment. |
-| <code>config/</code> | R1 baseline contract and application configuration. |
-| <code>docs/</code> | API contract, production baseline, integration boundary, and operating notes. |
-| <code>evidence/</code> | Preserved validation and experiment records. |
-| <code>scripts/</code> | Diagnostics, baseline validation, and offline selector experiments. |
-| <code>tests/</code> | Python unit and integration tests. |
+- <code>astrakriti3d/</code> — video and telemetry preparation, CLI orchestration, companion API, and recovery.
+- <code>Reconstruction layer/</code> — integrated WebODM application, Astrakriti3D interface, and Compose deployment.
+- <code>config/</code> — processing contracts and configuration.
+- <code>docs/</code> — API, deployment, architecture, and operating references.
+- <code>scripts/</code> — diagnostics and offline validation tools.
+- <code>tests/</code> — Python tests for preparation and orchestration.
 
-## Documentation
+## Roadmap and credits
 
-- [Preparation companion API and deployment](docs/COMPANION_API.md)
-- [Frozen R1 workflow and acceptance references](docs/PRODUCTION_BASELINE.md)
-- [Production integration boundary](docs/INTEGRATION_BOUNDARY.md)
-- [Implementation history](docs/IMPLEMENTATION_PHASES_WEBODM.md)
-- [Customized WebODM source and vendoring notes](Reconstruction%20layer/ASTRAKRITI3D_SOURCE.md)
+- Complete fresh end-to-end validation of the integrated workflow, including generated models, maps, measurements, and downloads.
+- Measure the under-10-minute target on documented inputs and hardware before publishing a runtime result.
+- Evaluate experimental frame selectors against comparable coverage and reconstruction-quality evidence before considering them as defaults.
+- Connect the presentation website to the reconstruction backend.
+
+**Documentation:** [Companion API and deployment](docs/COMPANION_API.md) · [Production workflow](docs/PRODUCTION_BASELINE.md) · [Integration boundary](docs/INTEGRATION_BOUNDARY.md) · [WebODM integration phases](docs/IMPLEMENTATION_PHASES_WEBODM.md)
+
+**Credits:** Astrakriti3D uses WebODM and NodeODM for its reconstruction stack. The customized WebODM source and upstream notices are described in the [source provenance notes](Reconstruction%20layer/ASTRAKRITI3D_SOURCE.md). See the [license notes](LICENSE_NOTES.md), [WebODM license](Reconstruction%20layer/LICENSE.md), and [security policy](Reconstruction%20layer/SECURITY.md).
 
 ## Known limits
 
-- Video-only <code>local</code> runs have arbitrary reconstruction orientation and scale; do not treat them as geographic measurements.
-- GPS and camera residuals do not replace independent checkpoints or a surveyed reference.
-- Results depend on image overlap, motion, lighting, texture, and available compute. The recorded R1 preview shows coverage gaps.
-- Alternative selectors and aggressive processing settings are experiments, not promoted production defaults.
-- Keep credentials, source video, generated evidence, and runtime databases out of Git. <code>.env</code> is local configuration and must remain private.
-
-## Attribution
-
-<code>Reconstruction layer/</code> contains customized, vendored WebODM source. Preserve its upstream license, trademark, and attribution files. Clone with <code>--recurse-submodules</code> to restore the WebODM locale and NodeODM dependencies. See the [source provenance notes](Reconstruction%20layer/ASTRAKRITI3D_SOURCE.md) and the [WebODM project](https://github.com/OpenDroneMap/WebODM).
+- Video-only local models have arbitrary orientation and scale; do not interpret them as geographic measurements.
+- Telemetry supplies geographic alignment inputs, not independent accuracy validation.
+- Reconstruction quality depends on overlap, camera motion, lighting, surface texture, and available compute.
+- DSM-dependent measurements require a valid generated DSM.
+- Keep credentials, source video, telemetry, generated evidence, and runtime data out of version control.
