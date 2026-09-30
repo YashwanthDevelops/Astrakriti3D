@@ -34,3 +34,4 @@ inputs/
 __pycache__/
 **/__pycache__/
 cleanup_audit.json
+/.local/

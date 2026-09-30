@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ecece5">
+  <meta name="description" content="A local interactive demonstration of Astrakriti3D, a drone video to 3D reconstruction workflow.">
+  <title>Astrakriti3D — Field Studio</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/astrakriti3d-mark.svg">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#mission">Skip to mission workspace</a>
+  <header class="masthead">
+    <a class="brand" href="#mission" aria-label="Astrakriti3D Field Studio home">
+      <img src="./assets/astrakriti3d-mark.svg" alt="" width="31" height="31">
+      <span class="brand-word">ASTRAKRITI<span>3D</span></span>
+      <span class="brand-divider" aria-hidden="true"></span>
+      <span class="brand-context">FIELD STUDIO</span>
+    </a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a class="nav-link is-current" href="#mission" data-nav-link>Mission <span>01</span></a>
+      <a class="nav-link" href="#workflow" data-nav-link>Workflow <span>02</span></a>
+      <a class="nav-link" href="#deliverables" data-nav-link>Deliverables <span>03</span></a>
+    </nav>
+    <div class="masthead-actions">
+      <span class="local-state"><i aria-hidden="true"></i> LOCAL DEMO</span>
+      <button class="button button-dark" id="run-demo-top" type="button">Run the sample <span aria-hidden="true">↗</span></button>
+      <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="mission-section" id="mission" aria-labelledby="mission-title">
+      <div class="hero-topline">
+        <p class="eyebrow"><span class="eyebrow-index">01</span> FIELD RECORD <span class="eyebrow-rule"></span> DRONE VIDEO → 3D</p>
+        <p class="record-date"><span class="status-pin"></span> FROZEN BASELINE <span class="mono">R1 / GEOREFERENCED</span></p>
+      </div>
+      <div class="hero-heading-row">
+        <h1 id="mission-title">A flight becomes<br><em>a place you can measure.</em></h1>
+        <div class="hero-aside">
+          <p>From moving video to a georeferenced 3D record of the ground below.</p>
+          <a class="text-link" href="#model">Explore the reconstruction <span aria-hidden="true">↓</span></a>
+        </div>
+      </div>
+
+      <div class="record-bar" aria-label="Current sample record">
+        <div class="record-identity"><span class="record-index mono">FLIGHT / 0142</span><strong>DJI_0142.MP4</strong><span class="record-caption">R1 · official production baseline</span></div>
+        <div class="record-fact"><span class="fact-label">SOURCE</span><strong>5.4K <small>· 29.97 fps</small></strong></div>
+        <div class="record-fact"><span class="fact-label">FLIGHT TIME</span><strong>03<span class="unit">m</span> 14<span class="unit">s</span></strong></div>
+        <div class="record-fact"><span class="fact-label">FRAME RATE</span><strong>1.0 <small>Hz</small></strong></div>
+        <div class="record-fact record-fact--status"><span class="fact-label">TELEMETRY</span><strong><i aria-hidden="true"></i> MATCHED <small>194 / 194</small></strong></div>
+      </div>
+
+      <section class="viewer-shell" id="model" data-viewer-shell aria-label="Interactive reconstruction viewer">
+        <div class="viewer-header">
+          <div class="viewer-title"><span class="viewer-kicker">MODEL / 01</span><h2>Survey corridor <span>·</span> R1</h2></div>
+          <div class="viewer-tabs" role="tablist" aria-label="Model view">
+            <button class="view-tab is-selected" type="button" role="tab" aria-controls="scene-stage" aria-selected="true" data-view="cloud">Point cloud <span>01</span></button>
+            <button class="view-tab" type="button" role="tab" aria-controls="scene-stage" aria-selected="false" data-view="ortho">Orthophoto <span>02</span></button>
+            <button class="view-tab" type="button" role="tab" aria-controls="scene-stage" aria-selected="false" data-view="flight">Flight path <span>03</span></button>
+          </div>
+          <button class="icon-button focus-button" id="focus-view" type="button" aria-label="Expand model view" title="Expand model view"><span aria-hidden="true">⤢</span></button>
+        </div>
+
+        <div class="viewer-layout">
+          <div class="scene-wrap" id="scene-wrap">
+            <div class="scene-stage" id="scene-stage" role="tabpanel" tabindex="0" data-scene="cloud" aria-label="Interactive sample reconstruction. Click to inspect camera positions, or activate measure mode to place two points.">
+              <div class="scene-grid" aria-hidden="true"></div>
+              <img class="scene-image image-cloud" id="cloud-image" src="./assets/point-cloud-placeholder.png" alt="Point cloud reconstruction preview of an elongated terrain corridor, colored by elevation from blue to yellow">
+              <img class="scene-image image-ortho" id="ortho-image" src="./assets/orthophoto-preview.jpg" alt="Orthophoto preview of a rural survey corridor">
+              <svg class="flight-overlay" id="flight-overlay" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
+                <path class="flight-line flight-line-under" d="M95 442 C184 386 203 267 317 302 S440 441 541 346 S676 171 788 230 S891 369 943 299"></path>
+                <path class="flight-line" d="M95 442 C184 386 203 267 317 302 S440 441 541 346 S676 171 788 230 S891 369 943 299"></path>
+              </svg>
+              <div class="camera-layer" id="camera-layer" aria-label="Camera positions">
+                <button class="camera-pin pin-a" type="button" data-camera="021" aria-label="Select camera 021"><span></span></button>
+                <button class="camera-pin pin-b" type="button" data-camera="068" aria-label="Select camera 068"><span></span></button>
+                <button class="camera-pin pin-c is-active" type="button" data-camera="112" aria-label="Select camera 112"><span></span></button>
+                <button class="camera-pin pin-d" type="button" data-camera="156" aria-label="Select camera 156"><span></span></button>
+                <button class="camera-pin pin-e" type="button" data-camera="188" aria-label="Select camera 188"><span></span></button>
+              </div>
+              <svg class="measurement-layer" id="measurement-layer" aria-hidden="true"></svg>
+              <div class="scene-topline">
+                <span class="scene-chip"><i aria-hidden="true"></i> SAMPLE RECONSTRUCTION</span>
+                <span class="scene-coordinates mono" id="coordinate-readout">EPSG:4326 <span>·</span> WGS 84</span>
+              </div>
+              <div class="scene-note mono" id="scene-note">ELEVATION / RELATIVE LOW → HIGH</div>
+              <div class="scene-bottomline">
+                <span class="scene-scale"><i></i><span>INSPECTABLE SURFACE</span></span>
+                <span class="mono" id="scene-count">2,429,114 POINTS</span>
+              </div>
+              <div class="measure-hint" id="measure-hint" role="status" aria-live="polite" hidden>Click two points on the surface to measure</div>
+              <div class="measurement-result" id="measurement-result" hidden><span>DEMO MEASUREMENT</span><strong id="measurement-value">—</strong><button id="export-measurement" type="button" aria-label="Export demo measurement" title="Export demo measurement">↓</button><button id="clear-measurement" type="button" aria-label="Clear measurement">×</button></div>
+            </div>
+            <div class="scene-controls">
+              <div class="scene-tools" role="group" aria-label="Scene tools">
+                <button class="tool-button is-on" id="inspect-tool" type="button" aria-pressed="true"><span class="tool-glyph glyph-crosshair" aria-hidden="true">＋</span> Inspect</button>
+                <button class="tool-button" id="measure-tool" type="button" aria-pressed="false"><span class="tool-glyph" aria-hidden="true">↗</span> Measure</button>
+              </div>
+              <label class="zoom-control" for="zoom-range"><span class="zoom-mark" aria-hidden="true">−</span><input id="zoom-range" type="range" min="100" max="145" value="100" aria-label="Zoom model"><span class="zoom-mark" aria-hidden="true">+</span><span class="zoom-readout mono" id="zoom-readout">100%</span></label>
+              <div class="layer-controls">
+                <label><input type="checkbox" id="camera-toggle" checked><span class="checkmark"></span> Cameras</label>
+                <label><input type="checkbox" id="path-toggle" checked><span class="checkmark"></span> Flight line</label>
+              </div>
+            </div>
+          </div>
+
+          <aside class="inspector" aria-label="Selected model details">
+            <div class="inspector-top"><span class="eyebrow">INSPECTOR / 01</span><button class="inspector-menu" id="inspector-menu" type="button" aria-label="Copy frame coordinates" title="Copy frame coordinates">···</button></div>
+            <div class="selected-observation"><span class="observation-index mono">FRAME <b id="camera-number">112</b> / 194</span><h3 id="camera-title">West approach</h3><p id="camera-detail">Camera position matched to flight telemetry.</p></div>
+            <div class="inspector-map" aria-label="Schematic flight path thumbnail">
+              <svg viewBox="0 0 300 142" role="img" aria-label="Schematic flight path with camera positions">
+                <path class="map-contour" d="M-9 41 C24 5 51 52 83 25S136 32 158 10 212 18 237 -7M-10 117 C28 81 52 126 86 90S137 107 162 73 212 85 236 53S280 70 315 29M4 154 C32 122 71 162 99 128S152 141 183 111 241 120 267 91 294 104 312 79M191 156 C211 126 241 149 263 123S287 129 309 108" />
+                <path class="map-route" d="M31 113 C59 96 64 53 103 64S138 112 168 84 211 41 240 59 261 102 281 78" />
+                <g class="map-points"><circle data-map-camera="021" cx="31" cy="113" r="3"/><circle data-map-camera="068" cx="103" cy="64" r="3"/><circle data-map-camera="112" cx="168" cy="84" r="4"/><circle data-map-camera="156" cx="240" cy="59" r="3"/><circle data-map-camera="188" cx="281" cy="78" r="3"/></g>
+                <circle class="map-active" id="map-active" cx="168" cy="84" r="8" />
+              </svg>
+              <span class="map-label map-label--start">START</span><span class="map-label map-label--end">END</span>
+              <span class="map-north" aria-hidden="true">N <i>↑</i></span><span class="map-schematic">PATH / SCHEMATIC</span>
+            </div>
+            <div class="observation-data">
+              <div><span>POSITION</span><strong class="mono" id="frame-position">13.0827° N<br>80.2707° E</strong></div>
+              <div><span>TELEMETRY ALT.</span><strong class="mono" id="frame-altitude">25.7 <small>m</small></strong></div>
+              <div><span>HEADING</span><strong class="mono" id="frame-heading">Not recorded</strong></div>
+            </div>
+            <button class="text-link inspector-link" id="next-camera" type="button">Next camera <span aria-hidden="true">→</span></button>
+          </aside>
+        </div>
+        <div class="viewer-footer">
+          <div class="viewer-footer-status"><span class="status-dot"></span><span>RECONSTRUCTION COMPLETE</span><i></i><span>194 / 194 REGISTERED</span></div>
+          <p>Preview geometry shown for interface demonstration. GPS residuals are not an independent accuracy check.</p>
+          <span class="mono viewer-run-id">TASK EF1199EC <span>·</span> R1</span>
+        </div>
+      </section>
+
+      <div class="metric-ribbon" aria-label="Baseline output metrics">
+        <div class="metric-item metric-item--lead"><span class="metric-label">BASELINE OUTPUT</span><strong>2.43<span>M</span></strong><small>dense cloud points</small></div>
+        <div class="metric-item"><span class="metric-label">IMAGE REGISTRATION</span><strong>194 <span>/ 194</span></strong><small>frames aligned</small></div>
+        <div class="metric-item"><span class="metric-label">REPROJECTION ERROR</span><strong>0.921 <span>px</span></strong><small>R1 reference</small></div>
+        <div class="metric-item"><span class="metric-label">GPS RESIDUAL <span class="help-mark" title="Internal comparison to input GPS; not survey accuracy.">i</span></span><strong>0.373 <span>m</span></strong><small>median · P95 0.941 m</small></div>
+        <div class="metric-note"><span class="metric-note-mark">!</span><p>Internal residuals describe alignment to input GPS. Independent checkpoints are required to establish survey accuracy.</p></div>
+      </div>
+    </section>
+
+    <section class="workflow-section" id="workflow" aria-labelledby="workflow-title">
+      <div class="section-heading">
+        <div><p class="eyebrow"><span class="eyebrow-index">02</span> THE TRANSFORMATION</p><h2 id="workflow-title">One flight. Six inspectable stages.</h2></div>
+        <p class="section-deck">Trace every frame from the source recording through to the reconstructed surface.</p>
+      </div>
+      <div class="workflow-track" role="group" aria-label="Reconstruction stages">
+        <button class="stage-step is-active" type="button" data-stage="source" aria-pressed="true"><span class="stage-number">01</span><span class="stage-icon stage-icon--source" aria-hidden="true"><i></i><i></i><i></i></span><strong>Source</strong><small>03:14 · MP4</small><span class="stage-line"></span></button>
+        <button class="stage-step" type="button" data-stage="frames" aria-pressed="false"><span class="stage-number">02</span><span class="stage-icon stage-icon--frames" aria-hidden="true"><i></i><i></i><i></i></span><strong>Frame sample</strong><small>194 · 1 Hz</small><span class="stage-line"></span></button>
+        <button class="stage-step" type="button" data-stage="telemetry" aria-pressed="false"><span class="stage-number">03</span><span class="stage-icon stage-icon--telemetry" aria-hidden="true"><i></i><i></i><i></i></span><strong>Geo-associate</strong><small>194 / 194</small><span class="stage-line"></span></button>
+        <button class="stage-step" type="button" data-stage="align" aria-pressed="false"><span class="stage-number">04</span><span class="stage-icon stage-icon--align" aria-hidden="true"><i></i><i></i><i></i></span><strong>Align</strong><small>0.921 px</small><span class="stage-line"></span></button>
+        <button class="stage-step" type="button" data-stage="surface" aria-pressed="false"><span class="stage-number">05</span><span class="stage-icon stage-icon--surface" aria-hidden="true"><i></i><i></i><i></i></span><strong>Reconstruct</strong><small>2.43M points</small><span class="stage-line"></span></button>
+        <button class="stage-step" type="button" data-stage="outputs" aria-pressed="false"><span class="stage-number">06</span><span class="stage-icon stage-icon--outputs" aria-hidden="true"><i></i><i></i><i></i></span><strong>Deliver</strong><small>4 outputs</small></button>
+      </div>
+      <div class="stage-detail" id="stage-detail" aria-live="polite"><div class="stage-detail-index mono">STAGE 01 / SOURCE</div><h3>Keep the original intact.</h3><p>R1 starts from DJI_0142.MP4, a 193.5934-second flight recording. The original stays unchanged while a deterministic frame set is prepared.</p><span class="stage-detail-meta mono">SHA-256 / 3F649586…C2524A91</span></div>
+      <div class="workflow-bottomline"><span>PREPARATION → WEBODM → VALIDATED OUTPUT</span><span class="mono">R1 / FROZEN CONTRACT</span></div>
+    </section>
+
+    <section class="deliverables-section" id="deliverables" aria-labelledby="deliverables-title">
+      <div class="deliverables-intro">
+        <p class="eyebrow"><span class="eyebrow-index">03</span> THE HANDOFF</p>
+        <h2 id="deliverables-title">A surface is only useful<br><em>when its provenance comes with it.</em></h2>
+        <p>Explore the output families produced by the reconstruction workflow. This demo record uses the frozen R1 acceptance reference.</p>
+        <button class="button button-lime" id="export-report" type="button">Export sample record <span aria-hidden="true">↓</span></button>
+        <span class="export-hint">Creates a local JSON summary in your browser.</span>
+      </div>
+      <div class="deliverables-list">
+        <article class="deliverable-row"><span class="deliverable-index">01</span><div class="deliverable-mark mark-cloud" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><div class="deliverable-copy"><h3>Dense point cloud</h3><p>2,429,114 reconstructed points</p></div><span class="file-type">LAZ</span><button class="deliverable-open" type="button" data-output="Point cloud" aria-label="View point cloud details">↗</button></article>
+        <article class="deliverable-row"><span class="deliverable-index">02</span><div class="deliverable-mark mark-mesh" aria-hidden="true"><i></i><i></i><i></i></div><div class="deliverable-copy"><h3>Textured surface</h3><p>3D mesh · 194,663 vertices</p></div><span class="file-type">GLB / ZIP</span><button class="deliverable-open" type="button" data-output="Textured surface" aria-label="View textured surface details">↗</button></article>
+        <article class="deliverable-row"><span class="deliverable-index">03</span><div class="deliverable-mark mark-map" aria-hidden="true"><i></i><i></i></div><div class="deliverable-copy"><h3>Orthophoto</h3><p>Georeferenced raster preview</p></div><span class="file-type">GEOTIFF</span><button class="deliverable-open" type="button" data-output="Orthophoto" aria-label="View orthophoto details">↗</button></article>
+        <article class="deliverable-row"><span class="deliverable-index">04</span><div class="deliverable-mark mark-report" aria-hidden="true"><i></i><i></i><i></i></div><div class="deliverable-copy"><h3>Run provenance</h3><p>Frames · telemetry · engine · metrics</p></div><span class="file-type">JSON / PDF</span><button class="deliverable-open" type="button" data-output="Run provenance" aria-label="View run provenance details">↗</button></article>
+        <div class="integrity-note"><span class="integrity-symbol">⌁</span><p><strong>Measure with context.</strong> Geographic alignment is present in the R1 fixture. Ground-truth accuracy and complete visible-scene coverage remain unverified without independent survey evidence.</p></div>
+      </div>
+    </section>
+
+    <section class="run-banner" aria-label="Simulated processing demo">
+      <div class="run-banner-copy"><span class="eyebrow">YOUR TURN / 04</span><h2>Watch a flight<br><em>become a surface.</em></h2><p>Replay the complete preparation and reconstruction sequence with local sample data.</p></div>
+      <button class="run-sequence-button" id="run-demo-bottom" type="button"><span class="run-button-icon" aria-hidden="true">▶</span><span><strong>Replay the R1 run</strong><small>Simulated · 7 seconds · no upload</small></span><span class="run-button-arrow" aria-hidden="true">↗</span></button>
+      <div class="run-banner-index mono">DEMO / 01 <span>—</span> LOCAL SESSION</div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><a class="footer-brand" href="#mission">ASTRAKRITI<span>3D</span></a><p>Drone video → georeferenced 3D reconstruction</p><p class="footer-provenance">Interface demo · deterministic sample values from the documented R1 baseline</p><a class="back-top" href="#mission">BACK TO FLIGHT ↑</a></footer>
+
+  <dialog class="run-dialog" id="run-dialog" aria-labelledby="run-dialog-title">
+    <div class="dialog-head"><span class="eyebrow"><span class="status-pin"></span> LOCAL DEMONSTRATION</span><button class="dialog-close" id="close-dialog" type="button" aria-label="Close simulation">×</button></div>
+    <div class="dialog-content"><div class="dialog-copy"><span class="dialog-run-id mono">RUN / R1-0142-LOCAL</span><h2 id="run-dialog-title">From source<br><em>to surface.</em></h2><p id="run-status-copy">Preparing the sample flight for reconstruction…</p></div><div class="simulation-display"><div class="simulation-wave" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="simulation-progress"><div class="progress-meta"><span id="active-stage-name">SOURCE VALIDATION</span><span class="mono" id="progress-percent">08%</span></div><div class="progress-track"><span id="progress-fill"></span></div><span class="simulation-caption mono" id="stage-description">Checking source manifest · DJI_0142.MP4</span></div></div></div>
+    <ol class="simulation-stages" id="simulation-stages"><li class="is-current"><span>01</span> Validate <i></i></li><li><span>02</span> Sample frames <i></i></li><li><span>03</span> Associate GPS <i></i></li><li><span>04</span> Reconstruct <i></i></li><li><span>05</span> Package <i></i></li></ol>
+    <div class="dialog-foot"><span class="mono">NO NETWORK · NO FILE UPLOAD · FRONTEND SIMULATION</span><button class="button button-lime" id="dialog-finish" type="button" hidden>Return to model ↗</button></div>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

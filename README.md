@@ -5,8 +5,16 @@
 <h1 align="center">Astrakriti3D</h1>
 
 <p align="center">
-  <strong>From drone footage to explorable 3D.</strong><br>
-  A unified workflow for video preparation, telemetry alignment, reconstruction, inspection, and export.
+  <strong>A prototype workflow for turning drone video into reviewable 3D site reconstructions.</strong><br>
+  Prepare video, optionally align supported DJI SRT telemetry, and review generated products with validation limits made explicit.
+</p>
+
+<p align="center">
+  <img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&amp;logoColor=white">
+  <img alt="FFmpeg" src="https://img.shields.io/badge/Video-FFmpeg-007808?logo=ffmpeg&amp;logoColor=white">
+  <img alt="Flask companion API" src="https://img.shields.io/badge/API-Flask-000000?logo=flask&amp;logoColor=white">
+  <img alt="Docker Compose" src="https://img.shields.io/badge/Deployment-Docker%20Compose-2496ED?logo=docker&amp;logoColor=white">
+  <img alt="Prototype status" src="https://img.shields.io/badge/Status-Prototype-C87524">
 </p>
 
 <h2 align="center">
@@ -14,6 +22,8 @@
 </h2>
 
 <p align="center"><strong>Presentation website</strong> · Backend integration coming later.</p>
+
+<p align="center"><a href="demo/">Open the standalone SIH demo</a> · <a href="#sih-submission-reports">SIH research and validation reports</a></p>
 
 <p align="center">
   <img src="docs/assets/readme/banner-20x8.png" width="100%" alt="Drone surveying rugged terrain as it transitions into a 3D surface mesh">
@@ -177,11 +187,23 @@ Astrakriti3D/
 ├── astrakriti3d/           # Video and telemetry preparation, API, orchestration
 ├── Reconstruction layer/   # Integrated application and Compose deployment
 ├── web/                    # Presentation landing page
+├── demo/                   # Standalone frontend-only SIH showcase
 ├── config/                 # Processing contracts and configuration
 ├── docs/                   # API, deployment, architecture, and operating guides
+├── output/pdf/             # SIH research and validation reports
 ├── scripts/                # Diagnostics and offline validation tools
 └── tests/                  # Preparation and orchestration tests
 ```
+
+## SIH submission reports
+
+These reports add market context, traceable technical references, and a status-separated account of project evidence. Implemented, validated, experimental, and planned capabilities are distinguished inside each document.
+
+- [Market Research & Competitive Gap Analysis](output/pdf/01_Market_Research_Competitive_Gap_Analysis.pdf)
+- [Research References & Technical Foundation](output/pdf/02_Research_References_Technical_Foundation.pdf)
+- [Real-World Results & Validation](output/pdf/03_Real_World_Results_Validation.pdf)
+
+The [standalone demo guide](demo/README.md) explains how to run the frontend-only showcase locally. Its sample presentation is not a live reconstruction service.
 
 ## Roadmap and credits
 

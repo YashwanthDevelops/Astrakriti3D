@@ -5,8 +5,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT_JSON = ROOT / "cleanup_audit.json"
-OUT_MD = ROOT / "cleanup_audit.md"
+OUT_DIR = ROOT / ".local" / "audits"
+OUT_JSON = OUT_DIR / "cleanup_audit.json"
+OUT_MD = OUT_DIR / "cleanup_audit.md"
 CAT = {
     "production": "Required for production",
     "tests": "Required for tests",
@@ -82,8 +83,8 @@ def references(files):
     return out
 
 def main():
-    files = sorted((p for p in ROOT.rglob("*") if p.is_file() and not p.is_symlink()), key=rel)
-    dirs = sorted((p for p in ROOT.rglob("*") if p.is_dir()), key=rel)
+    files = sorted((p for p in ROOT.rglob("*") if p.is_file() and not p.is_symlink() and ".local" not in p.relative_to(ROOT).parts), key=rel)
+    dirs = sorted((p for p in ROOT.rglob("*") if p.is_dir() and ".local" not in p.relative_to(ROOT).parts), key=rel)
     refs = references(files); records = []
     for path in dirs + files:
         key, reason = classify(path); is_dir = path.is_dir()
@@ -97,12 +98,13 @@ def main():
         t = totals[r["category"]]; t["files"] += int(r["kind"] == "file"); t["directories"] += int(r["kind"] == "directory")
         if r["kind"] == "file": t["bytes"] += r["size_bytes"]
     report = {"schema_version": "astrakriti3d.cleanup-audit.v1", "generated_at_utc": datetime.now(timezone.utc).isoformat(), "read_only": True, "project_root": str(ROOT), "inventory": {"file_count": len(files), "directory_count": len(dirs), "total_bytes": sum(p.stat().st_size for p in files)}, "category_totals": totals, "proposed_archive": proposed_archive, "proposed_deletion": proposed_delete, "deletion_policy": "No deletion performed. A deletion proposal requires human review; only unreferenced cache files are proposed.", "reference_method": "Literal relative-path and basename search across readable project text files; binary payloads are not parsed.", "ambiguous_historical_references": [r for r in records if r["references"] and r["category_key"] == "archive"], "records": records}
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
     OUT_JSON.write_text(json.dumps(report, indent=2), encoding="utf-8")
     lines = ["# Astrakriti3D cleanup audit", "", "Read-only audit. No file was deleted, moved, renamed, or modified by the audit.", "", f"Inventory: {len(files):,} files, {len(dirs):,} directories, {report['inventory']['total_bytes'] / 1e9:.3f} GB.", "", "## Category totals", "", "| Category | Files | Directories | Size (GB) |", "|---|---:|---:|---:|"]
     for label, t in totals.items(): lines.append(f"| {label} | {t['files']:,} | {t['directories']:,} | {t['bytes']/1e9:.3f} |")
     lines += ["", "## Proposed archive list", "", "No additional archive move is proposed; existing archive contents are retained.", ""] + ([f"- `{r['path']}` — {r['size_bytes']/1e9:.3f} GB" for r in proposed_archive] or ["- None"])
     lines += ["", "## Proposed deletion list", "", "Only unreferenced cache files are proposed; no deletion was performed.", ""] + ([f"- `{r['path']}` — {r['size_bytes']} bytes; references: none" for r in proposed_delete] or ["- None"])
-    lines += ["", "## Reference and safety notes", "", "- Python imports, CLI entry points, tests, package metadata, documentation, configuration, and evidence references were scanned.", "- Evidence and experimental selector material is retained conservatively, even when old or unsuccessful.", "- `.env` is classified as unclear because it contains local credentials/configuration.", f"- {len(report['ambiguous_historical_references'])} archived records have literal basename/path matches in historical text; these are ambiguous evidence links, not deletion candidates.", "- Complete per-file and per-directory classifications are in `cleanup_audit.json`."]
+    lines += ["", "## Reference and safety notes", "", "- Python imports, CLI entry points, tests, package metadata, documentation, configuration, and evidence references were scanned.", "- Evidence and experimental selector material is retained conservatively, even when old or unsuccessful.", "- `.env` is classified as unclear because it contains local credentials/configuration.", f"- {len(report['ambiguous_historical_references'])} archived records have literal basename/path matches in historical text; these are ambiguous evidence links, not deletion candidates.", "- Complete per-file and per-directory classifications are in `.local/audits/cleanup_audit.json`."]
     OUT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(json.dumps({"json": str(OUT_JSON), "markdown": str(OUT_MD), "files": len(files), "directories": len(dirs), "proposed_delete": len(proposed_delete), "proposed_archive": len(proposed_archive)}, indent=2))
 

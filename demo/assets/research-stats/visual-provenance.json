@@ -1,0 +1,111 @@
+{
+  "title": "Astrakriti3D research and demo visuals",
+  "created_by": "demo/scripts/generate_research_visuals.py",
+  "canvas": {
+    "width": 1920,
+    "height": 1080,
+    "background": "#F5F7FB"
+  },
+  "assets": [
+    {
+      "file": "demo/assets/research-stats/01-technology-landscape.png",
+      "pixels": [
+        1920,
+        1080
+      ],
+      "alt_text": "Three technology cards compare SfM/MVS, Gaussian splatting and early-access world models by purpose and limitation. A footer says Astrakriti3D uses WebODM/NodeODM and has not run a same-input comparison against the alternatives."
+    },
+    {
+      "file": "demo/assets/research-stats/02-selector-experiment.png",
+      "pixels": [
+        1920,
+        1080
+      ],
+      "alt_text": "Horizontal comparison of four WebODM runs on one DJI capture. R1 used 194 frames in 28.1 minutes with 0.37 m median and 0.94 m P95 camera-to-input-GPS residual. Lightweight coverage-aware used 223 frames in 26.6 minutes with 0.96/2.27 m residuals. Coverage-aware used 276 frames in 32.3 minutes with 0.93/2.28 m residuals. Aggressive adaptive used 147 frames in 18.1 minutes with 43.78/74.91 m residuals and fragmented coverage. The caption says residuals are not surveyed accuracy and R1 remains the baseline."
+    },
+    {
+      "file": "demo/assets/research-stats/03-current-output-evidence.png",
+      "pixels": [
+        1920,
+        1080
+      ],
+      "alt_text": "Evidence card with an actual screenshot of the completed Astrakriti3D textured-model viewer. Four metrics show 194 of 194 images reconstructed, 2.16 million dense points, a 9,712 by 8,500 pixel orthophoto and approximately 5 centimetres per pixel raster spacing. A visible caveat says coverage is patchy and there are no independent survey checkpoints."
+    }
+  ],
+  "selector_comparison": {
+    "file": "demo/assets/research-stats/02-selector-experiment.png",
+    "alt_text": "Horizontal comparison of four WebODM runs on one DJI capture. R1 used 194 frames in 28.1 minutes with 0.37 m median and 0.94 m P95 camera-to-input-GPS residual. Lightweight coverage-aware used 223 frames in 26.6 minutes with 0.96/2.27 m residuals. Coverage-aware used 276 frames in 32.3 minutes with 0.93/2.28 m residuals. Aggressive adaptive used 147 frames in 18.1 minutes with 43.78/74.91 m residuals and fragmented coverage. The caption says residuals are not surveyed accuracy and R1 remains the baseline.",
+    "raw_values": [
+      {
+        "name": "R1 baseline",
+        "frames": 194,
+        "registered": 194,
+        "minutes": 28.097167,
+        "median_m": 0.372906,
+        "p95_m": 0.937504,
+        "reprojection_px": 0.92137
+      },
+      {
+        "name": "Lightweight coverage-aware",
+        "frames": 223,
+        "registered": 223,
+        "minutes": 26.5739,
+        "median_m": 0.957057,
+        "p95_m": 2.273777,
+        "reprojection_px": 0.964319
+      },
+      {
+        "name": "Coverage-aware",
+        "frames": 276,
+        "registered": 276,
+        "minutes": 32.282583,
+        "median_m": 0.926588,
+        "p95_m": 2.278843,
+        "reprojection_px": 0.999113
+      },
+      {
+        "name": "Aggressive adaptive",
+        "frames": 147,
+        "registered": 147,
+        "minutes": 18.10565,
+        "median_m": 43.782793,
+        "p95_m": 74.906297,
+        "reprojection_px": 0.98028
+      }
+    ],
+    "transformations": [
+      "processing_time_ms divided by 60000 to display minutes",
+      "camera-to-input-GPS median and P95 drawn on a shared linear 0–80 m axis"
+    ],
+    "source_files": [
+      "evidence/phase19/lightweight-20260915-v4/comparison_report.json",
+      "evidence/phase18/coverage-aware-20260915-v14/comparison_report.json",
+      "evidence/phase16/aggressive-webodm-20260915/comparison_report.json"
+    ],
+    "caveat": "One run per configuration; residuals are against input telemetry, not independent surveyed checkpoints."
+  },
+  "current_output": {
+    "file": "demo/assets/research-stats/03-current-output-evidence.png",
+    "alt_text": "Evidence card with an actual screenshot of the completed Astrakriti3D textured-model viewer. Four metrics show 194 of 194 images reconstructed, 2.16 million dense points, a 9,712 by 8,500 pixel orthophoto and approximately 5 centimetres per pixel raster spacing. A visible caveat says coverage is patchy and there are no independent survey checkpoints.",
+    "source_files": [
+      "runs/DJI_0142-R1-demo-20260929-193104/quality-review.md",
+      "runs/DJI_0142-R1-demo-20260929-193104/report-metrics.json",
+      "runs/DJI_0142-R1-demo-20260929-193104/screenshots/model-textured.png"
+    ],
+    "metrics": {
+      "reconstructed_images": 194,
+      "available_images": 194,
+      "dense_points": 2155428,
+      "orthophoto_pixels": [
+        9712,
+        8500
+      ],
+      "orthophoto_spacing_cm_per_pixel": 5
+    },
+    "caveat": "Run review found patchy, incomplete coverage; no independent survey checkpoints; raster sampling is not positional accuracy."
+  },
+  "technology_landscape_sources": [
+    "output/pdf/Astrakriti3D_Drone_Video_to_3D_Technology_Assessment_2026-09.pdf, §§7–8.1, references [04], [05], [10], [18]–[21]"
+  ],
+  "integrity_note": "The attached reference chart's model names and values were not reused as project results. No cross-product performance benchmark is claimed."
+}
